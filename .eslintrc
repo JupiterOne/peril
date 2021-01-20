@@ -1,0 +1,10 @@
+{
+  "root": true,
+  "extends": [
+    "@jupiterone/eslint-config/node"
+  ],
+  "parserOptions": {
+    "project": "./tsconfig.json",
+    "tsconfigRootDir": "."
+  }
+}

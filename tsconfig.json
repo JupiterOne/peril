@@ -1,0 +1,14 @@
+{
+  "extends": "./node_modules/@jupiterone/typescript-tools/config/typescript",
+  "compilerOptions": {
+    "rootDir": ".",
+    "baseUrl": ".",
+    "outDir": "./dist",
+  },
+  "include": [
+    "src/**/*.ts",
+    "deploy/*.js",
+    "jest.*.js",
+    "*.config.js",
+  ],
+}

@@ -1,0 +1,37 @@
+{
+  "name": "project-risk-analyzer",
+  "license": "UNLICENSED",
+  "scripts": {
+    "build": "yarn ttsc -p tsconfig-dist.json",
+    "lint": "eslint --ext .ts,.tsx,.js,.jsx .",
+    "test": "jest",
+    "start": "NODE_OPTIONS='--max-old-space-size=4096' ts-node --compiler ttypescript ./src/migrateGraphData.ts",
+    "plan": "yarn build && jupiterone-manual-deploy --action plan -t jupiterone-infra",
+    "deploy": "yarn build && jupiterone-manual-deploy -t jupiterone-infra",
+    "deploy:dev": "yarn build && jupiterone-manual-deploy -t jupiterone-dev"
+  },
+  "dependencies": {
+    "@jupiterone/data-model": "^0.16.3",
+    "@jupiterone/platform-sdk-config-reader": "^1.0.3",
+    "@jupiterone/platform-sdk-logging": "^1.0.3",
+    "@types/fs-extra": "^9.0.6",
+    "escape-string-regexp": "^4.0.0",
+    "faker": "^5.1.0",
+    "fs-extra": "^9.1.0",
+    "globby": "^11.0.1",
+    "lodash": "^4.17.20",
+    "memfs": "^3.2.0",
+    "rimraf": "^3.0.2",
+    "uuid": "^8.3.2"
+  },
+  "devDependencies": {
+    "@jupiterone/dev-tools": "^7.1.0",
+    "@jupiterone/platform-sdk-framework-dev": "^1.0.3",
+    "@jupiterone/typescript-tools": "^13.0.2",
+    "@types/faker": "^5.1.5",
+    "@types/lodash": "^4.14.165",
+    "@types/rimraf": "^3.0.0",
+    "@types/uuid": "^8.3.0",
+    "ts-node": "^9.1.1"
+  }
+}
