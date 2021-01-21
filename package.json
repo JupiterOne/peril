@@ -16,6 +16,7 @@
     "@jupiterone/platform-sdk-logging": "^1.0.3",
     "@types/fs-extra": "^9.0.6",
     "escape-string-regexp": "^4.0.0",
+    "execa": "^5.0.0",
     "faker": "^5.1.0",
     "fs-extra": "^9.1.0",
     "globby": "^11.0.1",

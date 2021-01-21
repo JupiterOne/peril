@@ -1,5 +1,5 @@
 import { Risk } from './types';
-import { calculateRiskSubtotal } from './helpers';
+import { calculateRiskSubtotal, whereis } from './helpers';
 
 describe('helpers', () => {
   it('calculateRiskSubtotal sums all Risk values', () => {
@@ -17,5 +17,14 @@ describe('helpers', () => {
     ];
     const defaultRiskValue = 0;
     expect(calculateRiskSubtotal(risks, defaultRiskValue)).toEqual(11);
+  });
+
+  it('whereis returns path to found executable', () => {
+    expect(whereis('env')).toEqual('/usr/bin/env');
+    expect(whereis('env')).toEqual('/usr/bin/env');
+  });
+
+  it('whereis returns undefined for unfound executable', () => {
+    expect(whereis('waldo')).toEqual(undefined);
   });
 });

@@ -2,7 +2,7 @@ module.exports = {
   ...require('@jupiterone/typescript-tools/config/jest'),
   collectCoverage: true,
   collectCoverageFrom: ['src/**/*.ts'],
-  coveragePathIgnorePatterns: ['src/createLogger.ts'],
+  coveragePathIgnorePatterns: ['src/createLogger.ts', 'src/types.ts', 'src/index.ts'],
   coverageThreshold: {
     global: {
       statements: 90,

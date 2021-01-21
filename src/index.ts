@@ -1,18 +1,14 @@
-import { createLogger } from './createLogger';
-
-
 /*
  do something amazing
 */
 
 async function run() {
-  const logger = createLogger(module);
-  logger.info('Module init');
+  console.log('Module init');
 
   try {
     //
   } catch (e) {
-    logger.fatal(e);
+    console.error(e);
   }
 }
 

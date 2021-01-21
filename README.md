@@ -17,6 +17,7 @@ Use-cases include:
 filesystem, the ENV, and J1, and uses these inputs to calculate risk. The
 tool assumes:
 
+* Git is used for SCM.
 * Its PWD is the top-level of the checked-out git repo it should analyze.
 * The currently checked-out branch is the one to analyze.
 * SAST scan output, if available, is located in JSON files within a ./reports dir.

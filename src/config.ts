@@ -1,15 +1,15 @@
 import * as configReader from '@jupiterone/platform-sdk-config-reader';
 
 type KnownEnvironmentVariables = {
-  DATA_SET_NAME: string;
+  J1_API_TOKEN: string;
+  J1_ACCOUNT: string;
   LOG_LEVEL?: string;
 };
 
-const defaultEnv: KnownEnvironmentVariables = {
-  DATA_SET_NAME: 'full',
-};
+const processEnv = process.env as KnownEnvironmentVariables;
 
-export const envConfig = configReader.readConfigFromEnv(defaultEnv, {
-  dataSetName: (env) => configReader.readStringFromEnv(env, 'DATA_SET_NAME'),
+export const envConfig = configReader.readConfigFromEnv(processEnv, {
+  j1AuthToken: (env) => configReader.readStringFromEnv(env, 'J1_API_TOKEN'),
+  j1Account: (env) => configReader.readStringFromEnv(env, 'J1_ACCOUNT'),
   logLevel: (env) => configReader.readStringFromEnv(env, 'LOG_LEVEL', 'info'),
 });
