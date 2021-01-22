@@ -27,8 +27,8 @@ const config: any = {
 }
 
 export async function initConfig(flags: object) {
-  config.facts = await gatherAllFacts();
   config.flags = flags;
+  config.facts = await gatherAllFacts();
 }
 
 export function getConfig(): Config {

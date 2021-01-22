@@ -11,7 +11,7 @@
     "posttest": "yarn lint",
     "lint": "eslint --ext .ts,.tsx,.js,.jsx .",
     "test": "jest",
-    "fulltest": "yarn build && yarn lint && yarn test"
+    "fulltest": "yarn build && yarn test"
   },
   "dependencies": {
     "@jupiterone/data-model": "^0.16.3",

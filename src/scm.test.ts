@@ -55,7 +55,6 @@ describe('local risks', () => {
         stderr: ''
       }
     ))).toBeFalsy();
-
   });
 
   it('gpgVerifyRecentCommitsCheck() lowers risk when commits are signed', async () => {
@@ -100,7 +99,6 @@ describe('local risks', () => {
         failed: true
       }
     ))).toEqual(undefined);
-
   });
 
   it('getRemote should return remote details for origin', async () => {
@@ -148,6 +146,4 @@ describe('local risks', () => {
     expect(facts.scm.remoteUrl).toEqual(url);
     expect(facts.scm.gitPath).toBeTruthy();
   });
-
-
 });

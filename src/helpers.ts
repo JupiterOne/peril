@@ -1,7 +1,9 @@
 import { Risk, Config } from './types';
+import { getConfig } from './config';
 import path from 'path';
 import execa from 'execa';
 import * as fs from 'fs-extra';
+import get from 'lodash/get';
 
 export function calculateRiskSubtotal(risks: Risk[], defaultRiskValue: number): number {
   const reducer = (acc: number, val: number) => acc + val;
@@ -28,8 +30,9 @@ export function whereis(exe: string): string|undefined {
 
 export async function runCmd(cmd: string, execaCommand = execa.command): Promise<execa.ExecaReturnValue | execa.ExecaReturnValue & Error> {
   let res;
+  const dir = get(getConfig(), 'flags.dir', process.cwd());  // respect dir flag if present
   try {
-  res = await execaCommand(cmd);
+  res = await execaCommand(cmd, { cwd: dir });
   } catch (e) {
     return e;
   }
