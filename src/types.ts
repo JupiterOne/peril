@@ -28,8 +28,13 @@ export interface Config {
     j1Account: MaybeString;
     logLevel: string;
   };
-  flags?: object;
-  facts?: Facts;
+  flags: Flags;
+  facts: Facts;
+}
+
+export interface Flags {
+  verbose: boolean;
+  dir: string;
 }
 
 export type Facts = SCMFacts;

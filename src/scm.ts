@@ -1,16 +1,19 @@
 import { RiskCategory, Risk, SCMFacts, MaybeString } from './types';
 import { calculateRiskSubtotal, whereis, runCmd } from './helpers';
+import { getConfig } from './config';
 import * as fs from 'fs-extra';
 import * as path from 'path';
 
-export async function gatherLocalSCMRisk(dir: string = process.cwd()): Promise<RiskCategory> {
+export async function gatherLocalSCMRisk(): Promise<RiskCategory> {
   const checks: Promise<Risk>[] = [];
   const defaultRiskValue = 5;
+
+  const config = getConfig();
 
   const facts = await gatherFacts();
 
   // perform appropriate checks
-  checks.push(gitRepoDirCheck(dir));
+  checks.push(gitRepoDirCheck(config.flags.dir));
 
   if (facts.scm.gitPath) {
     checks.push(gitConfigGPGCheck());

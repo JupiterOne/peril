@@ -22,11 +22,15 @@ async function gatherAllFacts(): Promise<Facts> {
   return facts as Facts;
 }
 
-export const config: Config = {
+const config: any = {
   env: envConfig,
 }
 
 export async function initConfig(flags: object) {
   config.facts = await gatherAllFacts();
   config.flags = flags;
+}
+
+export function getConfig(): Config {
+  return config;
 }

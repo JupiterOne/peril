@@ -34,6 +34,19 @@ describe('helpers', () => {
         j1AuthToken: 'sekretvalue',
         j1Account: 'mycorp',
         logLevel: 'info'
+      },
+      flags: {
+        verbose: false,
+        dir: ''
+      },
+      facts: {
+        scm: {
+          branch: '',
+          remote: '',
+          remoteUrl: '',
+          gitPath: '',
+          gpgPath: ''
+        }
       }
     };
     const redacted = redactConfig(sekretConfig);
