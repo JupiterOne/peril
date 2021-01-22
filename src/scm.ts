@@ -9,6 +9,7 @@ export async function gatherLocalSCMRisk(dir: string = process.cwd()): Promise<R
 
   const facts = await gatherFacts();
 
+  // perform appropriate checks
   checks.push(gitRepoDirCheck(dir));
 
   if (facts.scm.gitPath) {
@@ -18,6 +19,7 @@ export async function gatherLocalSCMRisk(dir: string = process.cwd()): Promise<R
     checks.push(gpgVerifyRecentCommitsCheck());
   }
 
+  // gather risks
   const risks = await Promise.all(checks);
 
   return {
