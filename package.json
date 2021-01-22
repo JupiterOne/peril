@@ -5,10 +5,7 @@
     "build": "yarn ttsc -p tsconfig-dist.json",
     "lint": "eslint --ext .ts,.tsx,.js,.jsx .",
     "test": "jest",
-    "start": "NODE_OPTIONS='--max-old-space-size=4096' ts-node --compiler ttypescript ./src/migrateGraphData.ts",
-    "plan": "yarn build && jupiterone-manual-deploy --action plan -t jupiterone-infra",
-    "deploy": "yarn build && jupiterone-manual-deploy -t jupiterone-infra",
-    "deploy:dev": "yarn build && jupiterone-manual-deploy -t jupiterone-dev"
+    "fulltest": "yarn build && yarn lint && yarn test"
   },
   "dependencies": {
     "@jupiterone/data-model": "^0.16.3",

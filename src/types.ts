@@ -10,3 +10,14 @@ export interface RiskCategory {
   risks: Risk[];
   scoreSubtotal: number;
 }
+
+export type MaybeString = string | undefined;
+export interface SCMFacts {
+  scm: {
+    branch: MaybeString;
+    remote: MaybeString;
+    remoteUrl: MaybeString;
+    gitPath: MaybeString;
+    gpgPath: MaybeString;
+  }
+}

@@ -1,4 +1,4 @@
-import { RiskCategory, Risk } from './types';
+import { RiskCategory, Risk, SCMFacts, MaybeString } from './types';
 import { calculateRiskSubtotal, whereis, runCmd } from './helpers';
 import * as fs from 'fs-extra';
 import * as path from 'path';
@@ -7,15 +7,14 @@ export async function gatherLocalSCMRisk(dir: string = process.cwd()): Promise<R
   const checks: Promise<Risk>[] = [];
   const defaultRiskValue = 5;
 
-  const git = whereis('git');
-  const gpg = whereis('gpg');
+  const facts = await gatherFacts();
 
   checks.push(gitRepoDirCheck(dir));
 
-  if (git) {
+  if (facts.scm.gitPath) {
     checks.push(gitConfigGPGCheck());
   }
-  if (git && gpg) {
+  if (facts.scm.gitPath && facts.scm.gpgPath) {
     checks.push(gpgVerifyRecentCommitsCheck());
   }
 
@@ -87,4 +86,35 @@ export async function gpgVerifyCommit(gitref: string, cmdRunner: any = undefined
   return !cmd.failed && !!/VALIDSIG/.exec(cmd.stderr); // git puts this on stderr for some reason
 }
 
-gatherLocalSCMRisk().then(console.log).catch(console.error);
+export async function gatherFacts(cmdRunner: any = undefined): Promise<SCMFacts> {
+  const { remote, remoteUrl } = await getRemote(cmdRunner);
+  return {
+    scm: {
+      branch: await getBranch(cmdRunner),
+      remote,
+      remoteUrl,
+      gitPath: whereis('git'),
+      gpgPath: whereis('gpg')
+    }
+  };
+}
+
+export async function getBranch(cmdRunner: any = undefined): Promise<MaybeString> {
+  const cmd = await runCmd('git symbolic-ref --short HEAD', cmdRunner);
+  if (cmd.failed) {
+    return undefined;
+  }
+  return cmd.stdout;
+}
+
+export async function getRemote(cmdRunner: any = undefined): Promise<{remote: MaybeString, remoteUrl: MaybeString}> {
+  const { stdout: remoteUrl, failed } = await runCmd('git config --get remote.origin.url', cmdRunner);
+  if (failed) {
+    return { remote: undefined, remoteUrl: undefined };
+  }
+
+  return {
+    remoteUrl,
+    remote: ['github', 'bitbucket'].find(origin => remoteUrl.indexOf(origin) > 0),
+  };
+}

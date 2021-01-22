@@ -1,10 +1,21 @@
-import { gitRepoDirCheck, gitConfigGPGCheck, gpgVerifyCommit } from './scm';
+import {
+  gitRepoDirCheck,
+  gitConfigGPGCheck,
+  gpgVerifyCommit,
+  gpgVerifyRecentCommitsCheck,
+  gatherFacts,
+  getBranch,
+  getRemote
+} from './scm';
 
 describe('local risks', () => {
   it('gitRepoDirCheck should count missing .git folder as SCM risk', async () => {
     const risk = await gitRepoDirCheck('/tmp');
     expect(risk.value).toBeGreaterThanOrEqual(5);
     expect(risk.description).toMatch(/missing scm/i);
+    const risk2 = await gitRepoDirCheck(process.cwd());
+    expect(risk2.description).toMatch(/scm - git repo found/i);
+    expect(risk2.value).toBeLessThan(0);
   });
 
   it('gitConfigGPGCheck should follow commit.gpgsign setting', async () => {
@@ -22,20 +33,16 @@ describe('local risks', () => {
         command: 'git verify-commit --raw someref',
         exitCode: 0,
         stdout: '',
-        stderr: '[GNUPG:] NEWSIG erich.smith@jupiterone.com\n' +
+        failed: false,
+        stderr: '[GNUPG:] NEWSIG leet.coder@mycorp.com\n' +
           '[GNUPG:] KEY_CONSIDERED 628AD0CFB783B10FE198CF61E73869E02AE60C1E 0\n' +
           '[GNUPG:] SIG_ID HX5IIPi1P8M6qTxOklRhs8cNg/Q 2021-01-21 1611239974\n' +
           '[GNUPG:] KEY_CONSIDERED 628AD0CFB783B10FE198CF61E73869E02AE60C1E 0\n' +
-          '[GNUPG:] GOODSIG E73869E02AE60C1E Erich Smith <erich.smith@jupiterone.com>\n' +
+          '[GNUPG:] GOODSIG E73869E02AE60C1E Leet Coder <leet.coder@mycorp.com>\n' +
           '[GNUPG:] VALIDSIG 628AD0CFB783B10FE198CF61E73869E02AE60C1E 2021-01-21 1611239974 0 4 0 1 8 00 628AD0CFB783B10FE198CF61E73869E02AE60C1E\n' +
           '[GNUPG:] KEY_CONSIDERED 628AD0CFB783B10FE198CF61E73869E02AE60C1E 0\n' +
           '[GNUPG:] TRUST_ULTIMATE 0 pgp\n' +
-          '[GNUPG:] VERIFICATION_COMPLIANCE_MODE 23',
-        all: undefined,
-        failed: false,
-        timedOut: false,
-        isCanceled: false,
-        killed: false
+          '[GNUPG:] VERIFICATION_COMPLIANCE_MODE 23'
       }
     ))).toBeTruthy();
     expect(await gpgVerifyCommit('otherref', jest.fn().mockResolvedValueOnce(
@@ -43,16 +50,104 @@ describe('local risks', () => {
         shortMessage: 'Command failed with exit code 1: git verify-commit --raw otherref',
         command: 'git verify-commit --raw otherref',
         exitCode: 1,
-        signal: undefined,
-        signalDescription: undefined,
-        stdout: '',
-        stderr: '',
         failed: true,
-        timedOut: false,
-        isCanceled: false,
-        killed: false
+        stdout: '',
+        stderr: ''
       }
     ))).toBeFalsy();
 
   });
+
+  it('gpgVerifyRecentCommitsCheck() lowers risk when commits are signed', async () => {
+    const mockRunCmd = jest.fn();
+    mockRunCmd.mockResolvedValueOnce({
+      command: 'git verify-commit --raw HEAD',
+      failed: true,
+      shortMessage: 'Command failed with exit code 1: git verify-commit --raw otherref',
+      exitCode: 1
+    }).mockResolvedValueOnce({
+      command: 'git verify-commit --raw HEAD~1',
+      failed: false,
+      stderr: '[GNUPG:] NEWSIG leet.coder@mycorp.com\n' +
+          '[GNUPG:] KEY_CONSIDERED 628AD0CFB783B10FE198CF61E73869E02AE60C1E 0\n' +
+          '[GNUPG:] SIG_ID HX5IIPi1P8M6qTxOklRhs8cNg/Q 2021-01-21 1611239974\n' +
+          '[GNUPG:] KEY_CONSIDERED 628AD0CFB783B10FE198CF61E73869E02AE60C1E 0\n' +
+          '[GNUPG:] GOODSIG E73869E02AE60C1E Leet Coder <leet.coder@mycorp.com>\n' +
+          '[GNUPG:] VALIDSIG 628AD0CFB783B10FE198CF61E73869E02AE60C1E 2021-01-21 1611239974 0 4 0 1 8 00 628AD0CFB783B10FE198CF61E73869E02AE60C1E\n' +
+          '[GNUPG:] KEY_CONSIDERED 628AD0CFB783B10FE198CF61E73869E02AE60C1E 0\n' +
+          '[GNUPG:] TRUST_ULTIMATE 0 pgp\n' +
+          '[GNUPG:] VERIFICATION_COMPLIANCE_MODE 23',
+    });
+    const check = await gpgVerifyRecentCommitsCheck(mockRunCmd);
+    expect(check.value).toBeLessThan(0.5);
+    expect(check.description).toMatch(/one or more recent signed commits found/);
+  });
+
+  it('getBranch should currenly checked-out branch', async () => {
+    expect(await getBranch(jest.fn().mockResolvedValueOnce(
+    {
+        exitCode: 0,
+        stdout: 'main',
+        stderr: '',
+        failed: false
+      }
+    ))).toEqual('main');
+
+    expect(await getBranch(jest.fn().mockResolvedValueOnce(
+    {
+        shortMessage: 'fatal: not a git repository (or any of the parent directories): .git',
+        exitCode: 1,
+        failed: true
+      }
+    ))).toEqual(undefined);
+
+  });
+
+  it('getRemote should return remote details for origin', async () => {
+    const url = 'git@bitbucket.org:myorg/myproject.git';
+    const cmd = await getRemote(jest.fn().mockResolvedValueOnce(
+      {
+        command: 'git config --get remote.origin.url',
+        exitCode: 0,
+        stdout: url,
+        stderr: '',
+        failed: false
+      }
+    ));
+    expect(cmd.remote).toEqual('bitbucket');
+    expect(cmd.remoteUrl).toEqual(url);
+
+    const cmd2 = await getRemote(jest.fn().mockResolvedValueOnce(
+      {
+        command: 'git config --get remote.origin.url',
+        exitCode: 1,
+        stdout: '',
+        stderr: '',
+        failed: true
+      }
+    ));
+    expect(cmd2.remote).toEqual(undefined);
+    expect(cmd2.remoteUrl).toEqual(undefined);
+  });
+
+  it('gatherFacts gathers basic SCM facts', async () => {
+    const url = 'git@bitbucket.org:myorg/myproject.git';
+    const mockRunCmd = jest.fn();
+    mockRunCmd.mockResolvedValueOnce({
+      command: 'git config --get remote.origin.url',
+      stdout: url,
+      failed: false
+    }).mockResolvedValueOnce({
+      command: 'git symbolic-ref --short HEAD',
+      stdout: 'main',
+      failed: false
+    });
+    const facts = await gatherFacts(mockRunCmd);
+    expect(facts.scm.branch).toEqual('main');
+    expect(facts.scm.remote).toEqual('bitbucket');
+    expect(facts.scm.remoteUrl).toEqual(url);
+    expect(facts.scm.gitPath).toBeTruthy();
+  });
+
+
 });
