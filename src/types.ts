@@ -21,3 +21,15 @@ export interface SCMFacts {
     gpgPath: MaybeString;
   }
 }
+
+export interface Config {
+  env: {
+    j1AuthToken: MaybeString;
+    j1Account: MaybeString;
+    logLevel: string;
+  };
+  flags?: object;
+  facts?: Facts;
+}
+
+export type Facts = SCMFacts;

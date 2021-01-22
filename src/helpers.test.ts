@@ -1,5 +1,5 @@
-import { Risk } from './types';
-import { calculateRiskSubtotal, whereis } from './helpers';
+import { Risk, Config } from './types';
+import { calculateRiskSubtotal, whereis, redactConfig } from './helpers';
 
 describe('helpers', () => {
   it('calculateRiskSubtotal sums all Risk values', () => {
@@ -26,5 +26,17 @@ describe('helpers', () => {
 
   it('whereis returns undefined for unfound executable', () => {
     expect(whereis('waldo')).toEqual(undefined);
+  });
+
+  it('redactConfig protects sensitive ENV vars', () => {
+    const sekretConfig: Config = {
+      env: {
+        j1AuthToken: 'sekretvalue',
+        j1Account: 'mycorp',
+        logLevel: 'info'
+      }
+    };
+    const redacted = redactConfig(sekretConfig);
+    expect(redacted.env.j1AuthToken).toEqual('REDACTED');
   });
 });

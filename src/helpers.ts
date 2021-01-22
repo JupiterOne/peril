@@ -1,4 +1,4 @@
-import { Risk } from './types';
+import { Risk, Config } from './types';
 import path from 'path';
 import execa from 'execa';
 import * as fs from 'fs-extra';
@@ -34,4 +34,16 @@ export async function runCmd(cmd: string, execaCommand = execa.command): Promise
     return e;
   }
   return res;
+}
+
+export function redactConfig(origConfig: Config): Config {
+  // dup original object for safety
+  const config: Config = JSON.parse(JSON.stringify(origConfig));
+  const sensitiveKeyStrings = [ 'auth', 'token', 'api', 'credential', 'secret' ];
+  Object.keys(config.env).forEach(key => {
+    if(sensitiveKeyStrings.find(sensitive => key.toLowerCase().indexOf(sensitive) > 0)) {
+      (config.env as any)[key] = 'REDACTED';
+    }
+  });
+  return config;
 }

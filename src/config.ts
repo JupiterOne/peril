@@ -1,5 +1,5 @@
 import * as configReader from '@jupiterone/platform-sdk-config-reader';
-import { MaybeString, SCMFacts } from './types';
+import { Config, Facts } from './types';
 import * as scm from './scm';
 
 type KnownEnvironmentVariables = {
@@ -16,17 +16,6 @@ export const envConfig = configReader.readConfigFromEnv(processEnv, {
   logLevel: (env) => configReader.readStringFromEnv(env, 'LOG_LEVEL', 'info'),
 });
 
-interface Config {
-  env: {
-    j1AuthToken: MaybeString;
-    j1Account: MaybeString;
-    logLevel: string;
-  };
-  facts?: Facts;
-}
-
-type Facts = SCMFacts;
-
 async function gatherAllFacts(): Promise<Facts> {
   const facts: any = {};
   Object.assign(facts, await scm.gatherFacts());
@@ -34,9 +23,10 @@ async function gatherAllFacts(): Promise<Facts> {
 }
 
 export const config: Config = {
-  env: envConfig
+  env: envConfig,
 }
 
-export async function initConfig() {
+export async function initConfig(flags: object) {
   config.facts = await gatherAllFacts();
+  config.flags = flags;
 }

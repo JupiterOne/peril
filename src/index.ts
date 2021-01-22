@@ -1,28 +1,21 @@
 import {Command, flags} from '@oclif/command'
+import { config, initConfig } from './config';
+import { redactConfig } from './helpers';
 
 class Peril extends Command {
-  static description = 'describe the command here'
+  static description = 'JupiterOne Project Risk-Analysis and Reporting Tool'
 
   static flags = {
-    // add --version flag to show CLI version
-    version: flags.version({char: 'v'}),
+    version: flags.version({char: 'V'}),
     help: flags.help({char: 'h'}),
-    // flag with a value (-n, --name=VALUE)
     name: flags.string({char: 'n', description: 'name to print'}),
-    // flag with no value (-f, --force)
-    force: flags.boolean({char: 'f'}),
+    verbose: flags.boolean({char: 'v', description: 'enable verbose output'}),
   }
 
-  static args = [{name: 'file'}]
-
   async run() {
-    const {args, flags} = this.parse(Peril)
-
-    const name = flags.name ?? 'world'
-    this.log(`hello ${name} from ./src/index.ts`)
-    if (args.file && flags.force) {
-      this.log(`you input --force and --file: ${args.file}`)
-    }
+    const {flags} = this.parse(Peril)
+    await initConfig(flags);
+    console.log(redactConfig(config));
   }
 }
 
