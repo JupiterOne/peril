@@ -9,7 +9,7 @@ import {
 } from './scm';
 
 describe('local risks', () => {
-  it('gitRepoDirCheck should count missing .git folder as SCM risk', async () => {
+  it('gitRepoDirCheck counts missing .git folder as SCM risk', async () => {
     const risk = await gitRepoDirCheck('/tmp');
     expect(risk.value).toBeGreaterThanOrEqual(5);
     expect(risk.description).toMatch(/missing scm/i);
@@ -18,7 +18,7 @@ describe('local risks', () => {
     expect(risk2.value).toBeLessThan(0);
   });
 
-  it('gitConfigGPGCheck should follow commit.gpgsign setting', async () => {
+  it('gitConfigGPGCheck follows commit.gpgsign setting', async () => {
     const risk1 = await gitConfigGPGCheck(jest.fn().mockResolvedValue({failed: false, stdout: 'false'}));
     expect(risk1.description).toMatch(/not set to true/i);
     const risk2 = await gitConfigGPGCheck(jest.fn().mockResolvedValue({failed: false, stdout: 'true'}));
@@ -27,7 +27,7 @@ describe('local risks', () => {
     expect(risk3.description).toMatch(/not set to true/i);
   });
 
-  it('gpgVerifyCommit should return true if a valid signature is found', async () => {
+  it('gpgVerifyCommit returns true if a valid signature is found', async () => {
     expect(await gpgVerifyCommit('someref', jest.fn().mockResolvedValueOnce(
     {
         command: 'git verify-commit --raw someref',
@@ -82,7 +82,7 @@ describe('local risks', () => {
     expect(check.description).toMatch(/one or more recent signed commits found/);
   });
 
-  it('getBranch should currenly checked-out branch', async () => {
+  it('getBranch returns currenly checked-out branch', async () => {
     expect(await getBranch(jest.fn().mockResolvedValueOnce(
     {
         exitCode: 0,
@@ -101,7 +101,7 @@ describe('local risks', () => {
     ))).toEqual(undefined);
   });
 
-  it('getRemote should return remote details for origin', async () => {
+  it('getRemote returns remote details for origin', async () => {
     const url = 'git@bitbucket.org:myorg/myproject.git';
     const cmd = await getRemote(jest.fn().mockResolvedValueOnce(
       {

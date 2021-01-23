@@ -28,11 +28,11 @@ export function whereis(exe: string): string|undefined {
   return undefined;
 }
 
-export async function runCmd(cmd: string, execaCommand = execa.command): Promise<execa.ExecaReturnValue | execa.ExecaReturnValue & Error> {
+export async function runCmd(cmd: string, execaCommand = execa.command, shell = false): Promise<execa.ExecaReturnValue | execa.ExecaReturnValue & Error> {
   let res;
   const dir = get(getConfig(), 'flags.dir', process.cwd());  // respect dir flag if present
   try {
-  res = await execaCommand(cmd, { cwd: dir });
+  res = await execaCommand(cmd, { cwd: dir, shell });
   } catch (e) {
     return e;
   }

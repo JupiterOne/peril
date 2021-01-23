@@ -2,6 +2,8 @@ import {Command, flags} from '@oclif/command'
 import { getConfig, initConfig } from './config';
 import { redactConfig } from './helpers';
 import { gatherLocalSCMRisk } from './scm';
+import { gatherCodeRisk } from './code';
+import { RiskCategory } from './types';
 
 class Peril extends Command {
   static description = 'JupiterOne Project Risk-Analysis and Reporting Tool'
@@ -10,6 +12,7 @@ class Peril extends Command {
     version: flags.version({char: 'V'}),
     help: flags.help({char: 'h'}),
     dir: flags.string({char: 'd', description: 'directory path to scan', default: process.cwd()}),
+    mergeRef: flags.string({char: 'm', description: 'current git ref/tag of default branch (merge target)', default: 'master'}),
     verbose: flags.boolean({char: 'v', description: 'enable verbose output'}),
   }
 
@@ -20,8 +23,28 @@ class Peril extends Command {
     if (flags.verbose) {
       console.log(redactConfig(getConfig()));
     }
+
+    const categories: RiskCategory[] = [];
+
     const scmRisk = await gatherLocalSCMRisk();
-    console.log(scmRisk);
+    const codeRisk = await gatherCodeRisk();
+    categories.push(scmRisk);
+    categories.push(codeRisk);
+
+    if (flags.verbose) {
+      console.log(scmRisk);
+      console.log(codeRisk);
+    }
+
+    const riskTotal = categories.reduce((acc, c) => {
+      acc += c.scoreSubtotal;
+      return acc;
+    }, 0);
+    categories.forEach(riskCategory => {
+      console.log(`${riskCategory.title}: ${riskCategory.scoreSubtotal}`);
+    });
+    console.log('----')
+    console.log(riskTotal.toFixed(2));
   }
 }
 

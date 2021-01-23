@@ -10,6 +10,7 @@ export async function gatherLocalSCMRisk(): Promise<RiskCategory> {
 
   const config = getConfig();
 
+  // TODO: rm this, part of config
   const facts = await gatherFacts();
 
   // perform appropriate checks

@@ -35,6 +35,13 @@ export interface Config {
 export interface Flags {
   verbose: boolean;
   dir: string;
+  mergeRef: string;
 }
 
 export type Facts = SCMFacts;
+
+export interface ShortStat {
+  filesChanged: number;
+  linesAdded: number;
+  linesRemoved: number
+};
