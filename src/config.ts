@@ -1,6 +1,7 @@
 import * as configReader from '@jupiterone/platform-sdk-config-reader';
 import { Config, Facts } from './types';
 import * as scm from './scm';
+import * as code from './code';
 
 type KnownEnvironmentVariables = {
   J1_API_TOKEN: string;
@@ -18,7 +19,8 @@ export const envConfig = configReader.readConfigFromEnv(processEnv, {
 
 async function gatherAllFacts(): Promise<Facts> {
   const facts: any = {
-    ...await scm.gatherFacts()
+    ...await scm.gatherFacts(),
+    ...await code.gatherFacts()
   };
   return facts as Facts;
 }

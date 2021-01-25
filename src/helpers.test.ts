@@ -1,5 +1,5 @@
 import { Risk, Config } from './types';
-import { calculateRiskSubtotal, whereis, redactConfig } from './helpers';
+import { calculateRiskSubtotal, whereis, redactConfig, findFiles } from './helpers';
 
 describe('helpers', () => {
   it('calculateRiskSubtotal sums all Risk values', () => {
@@ -28,6 +28,15 @@ describe('helpers', () => {
     expect(whereis('waldo')).toEqual(undefined);
   });
 
+  it('findFiles returns array of matching files at path', async () => {
+    const thisFile = (__filename.split('/').pop() as string);
+    const thisFileDir = __dirname;
+    const matches = await findFiles(thisFileDir, thisFile);
+    expect(matches.length).toEqual(1);
+    const noMatches = await findFiles(thisFileDir, 'SZYZYGY');
+    expect(noMatches.length).toEqual(0);
+  });
+
   it('redactConfig protects sensitive ENV vars', () => {
     const sekretConfig: Config = {
       env: {
@@ -36,6 +45,7 @@ describe('helpers', () => {
         logLevel: 'info'
       },
       flags: {
+        mergeRef: 'main',
         verbose: false,
         dir: ''
       },
@@ -46,6 +56,11 @@ describe('helpers', () => {
           remoteUrl: '',
           gitPath: '',
           gpgPath: ''
+        },
+        code: {
+          scans: {
+            dependencyReport: ''
+          }
         }
       }
     };

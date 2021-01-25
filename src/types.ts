@@ -25,7 +25,7 @@ export interface SCMFacts {
 export interface CodeFacts {
   code: {
     scans: {
-      dependencyReport: MaybeString;
+      dependencyReports: MaybeString[];
     }
   }
 }

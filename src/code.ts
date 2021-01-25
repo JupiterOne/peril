@@ -1,6 +1,7 @@
 import { Risk, RiskCategory, ShortStat, CodeFacts } from './types';
-import { calculateRiskSubtotal, runCmd } from './helpers';
+import { calculateRiskSubtotal, findFiles, runCmd } from './helpers';
 import { getConfig } from './config';
+import path from 'path';
 
 export async function gatherCodeRisk(): Promise<RiskCategory> {
   const { mergeRef, verbose } = getConfig().flags;
@@ -100,13 +101,14 @@ export async function filesChangedCheck(gitStats: ShortStat, cmdRunner: any = un
 }
 
 export async function gatherFacts(cmdRunner: any = undefined): Promise<CodeFacts> {
-
+  const config = getConfig();
+  const dependencyReportsPattern = 'depscan-report.*.json';
+  const dependencyReportsDir = path.join(config.flags.dir, 'reports');
   return {
     code: {
       scans: {
-        dependencyReport: ''
+        dependencyReports: await findFiles(dependencyReportsDir, dependencyReportsPattern)
       }
     }
   };
 }
-

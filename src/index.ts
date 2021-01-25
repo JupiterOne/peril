@@ -21,7 +21,7 @@ class Peril extends Command {
     await initConfig(flags);
 
     if (flags.verbose) {
-      console.log(redactConfig(getConfig()));
+      console.log(JSON.stringify(redactConfig(getConfig()), null, 2));
     }
 
     const categories: RiskCategory[] = [];
