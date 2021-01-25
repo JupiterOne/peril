@@ -39,6 +39,23 @@ export async function runCmd(cmd: string, execaCommand = execa.command, shell = 
   return res;
 }
 
+// finds all files matching pattern at path
+// returns empty array if no files match
+export async function findFiles(searchPath: string, pattern: string): Promise<string[]> {
+  const files: string[] = [];
+  try {
+    const dirFiles = await fs.readdir(searchPath);
+    for (const file of dirFiles) {
+      if (RegExp(pattern).exec(file)) {
+        files.push(path.join(searchPath, file));
+      }
+    }
+  } catch (e) {
+    // NOP
+  }
+  return files;
+}
+
 export function redactConfig(origConfig: Config): Config {
   // dup original object for safety
   const config: Config = JSON.parse(JSON.stringify(origConfig));

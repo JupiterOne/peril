@@ -1,4 +1,4 @@
-import { Risk, RiskCategory, ShortStat } from './types';
+import { Risk, RiskCategory, ShortStat, CodeFacts } from './types';
 import { calculateRiskSubtotal, runCmd } from './helpers';
 import { getConfig } from './config';
 
@@ -98,3 +98,15 @@ export async function filesChangedCheck(gitStats: ShortStat, cmdRunner: any = un
     description: `Code - Risk for ${gitStats.filesChanged} changed files.`,
   };
 }
+
+export async function gatherFacts(cmdRunner: any = undefined): Promise<CodeFacts> {
+
+  return {
+    code: {
+      scans: {
+        dependencyReport: ''
+      }
+    }
+  };
+}
+

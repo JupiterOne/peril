@@ -22,6 +22,16 @@ export interface SCMFacts {
   }
 }
 
+export interface CodeFacts {
+  code: {
+    scans: {
+      dependencyReport: MaybeString;
+    }
+  }
+}
+
+export type Facts = SCMFacts & CodeFacts;
+
 export interface Config {
   env: {
     j1AuthToken: MaybeString;
@@ -37,8 +47,6 @@ export interface Flags {
   dir: string;
   mergeRef: string;
 }
-
-export type Facts = SCMFacts;
 
 export interface ShortStat {
   filesChanged: number;

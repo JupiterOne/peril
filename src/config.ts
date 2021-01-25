@@ -17,8 +17,9 @@ export const envConfig = configReader.readConfigFromEnv(processEnv, {
 });
 
 async function gatherAllFacts(): Promise<Facts> {
-  const facts: any = {};
-  Object.assign(facts, await scm.gatherFacts());
+  const facts: any = {
+    ...await scm.gatherFacts()
+  };
   return facts as Facts;
 }
 

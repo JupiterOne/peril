@@ -10,16 +10,13 @@ export async function gatherLocalSCMRisk(): Promise<RiskCategory> {
 
   const config = getConfig();
 
-  // TODO: rm this, part of config
-  const facts = await gatherFacts();
-
   // perform appropriate checks
   checks.push(gitRepoDirCheck(config.flags.dir));
 
-  if (facts.scm.gitPath) {
+  if (config.facts.scm.gitPath) {
     checks.push(gitConfigGPGCheck());
   }
-  if (facts.scm.gitPath && facts.scm.gpgPath) {
+  if (config.facts.scm.gitPath && config.facts.scm.gpgPath) {
     checks.push(gpgVerifyRecentCommitsCheck());
   }
 

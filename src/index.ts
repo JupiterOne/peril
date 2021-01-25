@@ -36,10 +36,10 @@ class Peril extends Command {
       console.log(codeRisk);
     }
 
-    const riskTotal = categories.reduce((acc, c) => {
+    const riskTotal = Math.max(categories.reduce((acc, c) => {
       acc += c.scoreSubtotal;
       return acc;
-    }, 0);
+    }, 0), 0);
     categories.forEach(riskCategory => {
       console.log(`${riskCategory.title}: ${riskCategory.scoreSubtotal}`);
     });
