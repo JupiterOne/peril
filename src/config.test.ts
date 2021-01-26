@@ -7,7 +7,7 @@ describe('config', () => {
   });
 
   it('gathers facts from all relevant modules', async () => {
-    await initConfig({});
+    await initConfig({ dir: process.cwd() });
     expect(getConfig().facts).toBeTruthy();
   });
 });

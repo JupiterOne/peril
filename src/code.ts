@@ -1,21 +1,23 @@
-import { Risk, RiskCategory, ShortStat, CodeFacts } from './types';
+import { Risk, RiskCategory, ShortStat, CodeFacts, MaybeString, DepScanFinding } from './types';
 import { calculateRiskSubtotal, findFiles, runCmd } from './helpers';
 import { getConfig } from './config';
 import path from 'path';
+import * as fs from 'fs-extra';
 
 export async function gatherCodeRisk(): Promise<RiskCategory> {
-  const { mergeRef, verbose } = getConfig().flags;
+  const config = getConfig();
 
   const defaultRiskValue = 0;
   const checks: Promise<Risk>[] = [];
 
-  const gitStats = await getGitDiffStats(mergeRef);
+  const gitStats = await getGitDiffStats(config.flags.mergeRef);
 
   if (gitStats.filesChanged > 0) {
     checks.push(locCheck(gitStats));
     checks.push(filesChangedCheck(gitStats));
+    checks.push(depScanCheck(await parseShiftLeftDepScan(config.facts.code.scans.depScanReport)));
   } else {
-    verbose && console.error(`Couldn't retrieve git stats for HEAD..${mergeRef}, skipping some checks.`);
+    config.flags.verbose && console.error(`Couldn't retrieve git stats for HEAD..${config.flags.mergeRef}, skipping some checks.`);
   }
 
   // gather risks
@@ -100,15 +102,82 @@ export async function filesChangedCheck(gitStats: ShortStat, cmdRunner: any = un
   };
 }
 
+export async function depScanCheck(findings: DepScanFinding[]): Promise<Risk> {
+  const source = 'code.depscan.findings';
+
+  if (!findings.length) {
+    return {
+      source,
+      description: 'Code - Missing Dependency Scan',
+      value: 10
+    }
+  }
+  const ignoreSeverityList = 'INFO, LOW';
+  const ignoreUnfixable = true;
+  const ignoreSeverities = ignoreSeverityList.toLowerCase().split(',').map(i => i.trim());
+  let value = 0;
+  const sevCounts: { [key: string]: number } = {
+    critical: 0,
+    high: 0,
+    medium: 0,
+    low: 0,
+    info: 0
+  };
+
+  for (const finding of findings) {
+    if (!finding.fix_version && ignoreUnfixable) {
+      continue;
+    }
+    if (ignoreSeverities.includes(finding.severity.toLowerCase())) {
+      continue;
+    }
+    value += parseFloat(finding.cvss_score);
+    sevCounts[finding.severity.toLowerCase()] += 1;
+  }
+
+  // summarize valid findings in description
+  // e.g. 1 CRITICAL, 2 HIGH, etc.
+  const validFindingCounts: string[] = [];
+  for (const sevKey of Object.keys(sevCounts)) {
+    if (sevCounts[sevKey] > 0) {
+        validFindingCounts.push(`${sevCounts[sevKey]} ${sevKey.toUpperCase()}`);
+    }
+  }
+
+  return {
+    source,
+    description: validFindingCounts.join(', '),
+    value
+  };
+}
+
 export async function gatherFacts(cmdRunner: any = undefined): Promise<CodeFacts> {
   const config = getConfig();
-  const dependencyReportsPattern = 'depscan-report.*.json';
-  const dependencyReportsDir = path.join(config.flags.dir, 'reports');
+  const depScanReportPattern = 'depscan-report.*.json';
+  const depScanReportDir = path.join(config.flags.dir, 'reports');
   return {
     code: {
       scans: {
-        dependencyReports: await findFiles(dependencyReportsDir, dependencyReportsPattern)
+        depScanReport: (await findFiles(depScanReportDir, depScanReportPattern))[0]
       }
     }
   };
+}
+
+export async function parseShiftLeftDepScan(reportFile: MaybeString, readFile: typeof fs.readFile = fs.readFile): Promise<DepScanFinding[]> {
+  const depFindings: DepScanFinding[] = [];
+  try {
+    const report = await readFile(String(reportFile), 'utf8');
+    // each line in report is a stringified JSON finding expression
+    const lines = report.trim().split('\n').filter(l => l.length > 0);
+    if (!lines.length) {
+      return [];
+    }
+    lines.map(line => {
+      depFindings.push(JSON.parse(line) as DepScanFinding);
+    });
+  } catch (e) {
+    return [];
+  }
+  return depFindings;
 }

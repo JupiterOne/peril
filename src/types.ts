@@ -25,7 +25,7 @@ export interface SCMFacts {
 export interface CodeFacts {
   code: {
     scans: {
-      dependencyReports: MaybeString[];
+      depScanReport: MaybeString;
     }
   }
 }
@@ -53,3 +53,15 @@ export interface ShortStat {
   linesAdded: number;
   linesRemoved: number
 };
+
+export interface DepScanFinding {
+  id: string;
+  package: string;
+  package_usage: string;
+  version: string;
+  fix_version: string | null;
+  severity: string;
+  cvss_score: string;
+  short_description: string;
+}
+

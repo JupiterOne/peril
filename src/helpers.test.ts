@@ -59,7 +59,7 @@ describe('helpers', () => {
         },
         code: {
           scans: {
-            dependencyReport: ''
+            depScanReport: ''
           }
         }
       }

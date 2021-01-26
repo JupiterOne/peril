@@ -1,5 +1,6 @@
-import { parseGitDiffShortStat, getGitDiffStats, locCheck, filesChangedCheck } from './code';
+import { parseGitDiffShortStat, getGitDiffStats, locCheck, filesChangedCheck, parseShiftLeftDepScan, depScanCheck } from './code';
 import { ShortStat } from './types';
+import { depScanFindings } from '../test/fixtures/depscanFindings';
 
 describe('code risks', () => {
   it('parseGitDiffShortStat parses git diff stats for numeric values', () => {
@@ -63,5 +64,26 @@ describe('code risks', () => {
     expect(risk2.value).toEqual(2);
   });
 
+  it('parseShiftLeftDepScan parses file of newline-delimited JSON strings into DepScanFinding[]', async () => {
+    const reportString = depScanFindings.map(f => JSON.stringify(f)).join('\n');
+    const findings = await parseShiftLeftDepScan('testReport', jest.fn().mockResolvedValueOnce(reportString));
+    expect(findings).toEqual(depScanFindings);
+    expect(await parseShiftLeftDepScan('testReport', jest.fn().mockResolvedValueOnce(''))).toEqual([]);
+  });
 
+  it('parseShiftLeftDepScan returns empty Array on error/missing report', async () => {
+    const findings = await parseShiftLeftDepScan(undefined);
+    expect(findings).toEqual([]);
+  });
+
+  it('depScanCheck penalizes for missing scans', async () => {
+    const missingScanRisk = await depScanCheck([]);
+    expect(missingScanRisk.value).toBeGreaterThanOrEqual(1);
+  });
+
+  it('depScanCheck ignores risk for <MEDIUM severity or unfixable findings', async () => {
+    const risk = await (depScanCheck(depScanFindings));
+    expect(risk.value).toEqual(7.5);
+    expect(risk.description).toMatch(/1 HIGH/);
+  });
 });
