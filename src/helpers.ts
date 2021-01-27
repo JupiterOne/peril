@@ -67,3 +67,10 @@ export function redactConfig(origConfig: Config): Config {
   });
   return config;
 }
+
+export function formatRisk(risk: Risk, category: string, check: string): Risk {
+  const newRisk = { ...risk };
+  newRisk.value = parseFloat(risk.value.toFixed(2)); // truncate to 2 digits past decimal
+  newRisk.description = category.toUpperCase() + ' - ' + check + ': ' + risk.description;
+  return newRisk;
+}

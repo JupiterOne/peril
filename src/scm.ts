@@ -1,8 +1,10 @@
 import { RiskCategory, Risk, SCMFacts, MaybeString } from './types';
-import { calculateRiskSubtotal, whereis, runCmd } from './helpers';
+import { calculateRiskSubtotal, whereis, runCmd, formatRisk } from './helpers';
 import { getConfig } from './config';
 import * as fs from 'fs-extra';
 import * as path from 'path';
+
+const riskCategory = 'scm';
 
 export async function gatherLocalSCMRisk(): Promise<RiskCategory> {
   const checks: Promise<Risk>[] = [];
@@ -36,18 +38,18 @@ export async function gitRepoDirCheck(dir: string): Promise<Risk> {
   const config = getConfig();
   const missingValue = config.values.checks.scm.git.missingValue;
   let value = missingValue;
-  let description = 'Missing SCM - no git repo found!';
+  let description = 'Missing - no repo found!';
 
   if (await fs.pathExists(path.join(dir, '.git'))) {
     value = -5;
-    description = 'SCM - git repo found.';
+    description = 'Repo found.';
   }
 
-  return {
+  return formatRisk({
     check,
     value,
     description
-  };
+  }, riskCategory, check);
 }
 
 export async function gitConfigGPGCheck(cmdRunner: any = undefined): Promise<Risk> {
@@ -55,20 +57,20 @@ export async function gitConfigGPGCheck(cmdRunner: any = undefined): Promise<Ris
   const config = getConfig();
   const missingValue = config.values.checks.scm.enforceGpg.missingValue;
   let value = missingValue;
-  let description = 'SCM - commit.gpgsign NOT set to true.';
+  let description = 'commit.gpgsign NOT set to true.';
 
   const cmd = await runCmd('git config --get commit.gpgsign', cmdRunner);
 
   if (!cmd.failed && cmd.stdout.includes('true')) {
     value = -1;
-    description = 'SCM - commit.gpgsign enabled.'
+    description = 'commit.gpgsign enabled.'
   }
 
-  return {
+  return formatRisk({
     check,
     value,
     description
-  };
+  }, riskCategory, check);
 }
 
 export async function gpgVerifyRecentCommitsCheck(cmdRunner: any = undefined): Promise<Risk> {
@@ -76,21 +78,21 @@ export async function gpgVerifyRecentCommitsCheck(cmdRunner: any = undefined): P
   const config = getConfig();
   const missingValue = config.values.checks.scm.verifyGpg.missingValue;
   let value = missingValue;
-  let description = 'SCM - NO recent signed commits found.';
+  let description = 'No recent signed commits found.';
 
   const validHeadSha = await gpgVerifyCommit('HEAD', cmdRunner);
   const validPrevSha = await gpgVerifyCommit('HEAD~1', cmdRunner);
 
   if (validHeadSha || validPrevSha) {
     value = -1;
-    description = 'SCM - one or more recent signed commits found.'
+    description = 'One or more recent signed commits found.'
   }
 
-  return {
+  return formatRisk({
     check,
     value,
     description
-  };
+  }, riskCategory, check);
 }
 
 export async function gpgVerifyCommit(gitref: string, cmdRunner: any = undefined): Promise<boolean> {

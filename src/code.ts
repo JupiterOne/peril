@@ -1,5 +1,5 @@
 import { Risk, RiskCategory, ShortStat, CodeFacts, MaybeString, DepScanFinding } from './types';
-import { calculateRiskSubtotal, findFiles, runCmd } from './helpers';
+import { calculateRiskSubtotal, findFiles, runCmd, formatRisk } from './helpers';
 import { getConfig } from './config';
 import path from 'path';
 import * as fs from 'fs-extra';
@@ -86,11 +86,11 @@ export async function locCheck(gitStats: ShortStat): Promise<Risk> {
   // scale net changed lines (which may be negative) by a configurable ratio to determine risk value
   const value = netChangedLOC * (riskValuePerStep / riskLOCStep);
 
-  return {
+  return formatRisk({
     check,
     value,
-    description: `${riskCategory} - Risk for ~${netChangedLOC} net lines of changed code.`,
-  };
+    description: `~${netChangedLOC} net lines of changed code.`,
+  }, riskCategory, check);
 }
 
 export async function filesChangedCheck(gitStats: ShortStat, cmdRunner: any = undefined): Promise<Risk> {
@@ -104,11 +104,11 @@ export async function filesChangedCheck(gitStats: ShortStat, cmdRunner: any = un
   // scale changed files by a configurable ratio to determine risk value
   const value = gitStats.filesChanged * (riskValuePerStep / riskFilesStep);
 
-  return {
+  return formatRisk({
     check,
     value,
-    description: `Code - Risk for ${gitStats.filesChanged} changed files.`,
-  };
+    description: `${gitStats.filesChanged} changed files.`,
+  }, riskCategory, check);
 }
 
 export async function depScanCheck(findings: DepScanFinding[]): Promise<Risk> {
@@ -157,11 +157,11 @@ export async function depScanCheck(findings: DepScanFinding[]): Promise<Risk> {
     }
   }
 
-  return {
+  return formatRisk({
     check,
-    description: 'Code - Valid Dependency Scan Findings: ' + validFindingCounts.join(', '),
+    description: validFindingCounts.join(', '),
     value
-  };
+  }, riskCategory, check);
 }
 
 export async function gatherFacts(cmdRunner: any = undefined): Promise<CodeFacts> {
