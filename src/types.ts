@@ -40,8 +40,42 @@ export interface Config {
   };
   flags: Flags;
   facts: Facts;
+  values: {
+    checks: SCMValues & CodeValues
+  }
 }
 
+export interface SCMValues {
+  scm: {
+    git: {
+      missingValue: number;
+    },
+    enforceGpg: {
+      missingValue: number;
+    },
+    verifyGpg: {
+      missingValue: number;
+    }
+  }
+}
+
+export interface CodeValues {
+  code: {
+      linesChanged : {
+        riskStep: number;
+        riskValuePerStep: number;
+      },
+      filesChanged : {
+        riskStep: number;
+        riskValuePerStep: number;
+      },
+      depscanFindings : {
+        ignoreSeverityList: string;
+        ignoreUnfixable: boolean;
+        missingValue: number;
+      }
+  }
+}
 export interface Flags {
   verbose: boolean;
   dir: string;

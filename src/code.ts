@@ -4,9 +4,12 @@ import { getConfig } from './config';
 import path from 'path';
 import * as fs from 'fs-extra';
 
+const riskCategory = 'code';
+
 export async function gatherCodeRisk(): Promise<RiskCategory> {
   const config = getConfig();
 
+  // TODO: allow category risk config override
   const defaultRiskValue = 0;
   const checks: Promise<Risk>[] = [];
 
@@ -15,10 +18,10 @@ export async function gatherCodeRisk(): Promise<RiskCategory> {
   if (gitStats.filesChanged > 0) {
     checks.push(locCheck(gitStats));
     checks.push(filesChangedCheck(gitStats));
-    checks.push(depScanCheck(await parseShiftLeftDepScan(config.facts.code.scans.depScanReport)));
   } else {
     config.flags.verbose && console.error(`Couldn't retrieve git stats for HEAD..${config.flags.mergeRef}, skipping some checks.`);
   }
+  checks.push(depScanCheck(await parseShiftLeftDepScan(config.facts.code.scans.depScanReport)));
 
   // gather risks
   const risks = await Promise.all(checks);
@@ -71,13 +74,14 @@ export async function getGitDiffStats(mergeRef: string, cmdRunner: any = undefin
 }
 
 export async function locCheck(gitStats: ShortStat): Promise<Risk> {
-  const check = 'code.lines.changed';
+  const check = 'linesChanged';
+  const config = getConfig();
 
   // Simple linear model for positive risk as net new lines of code:
   // Code is a liability. Therefore deletions actually represent (on average), negative risk.
   const netChangedLOC = gitStats.linesAdded - gitStats.linesRemoved;
-  const riskLOCStep = 100;
-  const riskValuePerStep = 1;
+  const riskLOCStep = config.values.checks.code.linesChanged.riskStep;
+  const riskValuePerStep = config.values.checks.code.linesChanged.riskValuePerStep;
 
   // scale net changed lines (which may be negative) by a configurable ratio to determine risk value
   const value = netChangedLOC * (riskValuePerStep / riskLOCStep);
@@ -85,15 +89,17 @@ export async function locCheck(gitStats: ShortStat): Promise<Risk> {
   return {
     check,
     value,
-    description: `Code - Risk for ~${netChangedLOC} net lines of changed code.`,
+    description: `${riskCategory} - Risk for ~${netChangedLOC} net lines of changed code.`,
   };
 }
 
 export async function filesChangedCheck(gitStats: ShortStat, cmdRunner: any = undefined): Promise<Risk> {
-  const check = 'code.files.changed';
+  const check = 'filesChanged';
+  const config = getConfig();
   // Simple linear model for increased risk due to many files changed (therefore hard to review/reason about).
-  const riskFilesStep = 20;
-  const riskValuePerStep = 1;
+
+  const riskFilesStep = config.values.checks.code.filesChanged.riskStep;
+  const riskValuePerStep = config.values.checks.code.filesChanged.riskValuePerStep;
 
   // scale changed files by a configurable ratio to determine risk value
   const value = gitStats.filesChanged * (riskValuePerStep / riskFilesStep);
@@ -106,18 +112,18 @@ export async function filesChangedCheck(gitStats: ShortStat, cmdRunner: any = un
 }
 
 export async function depScanCheck(findings: DepScanFinding[]): Promise<Risk> {
-  const check = 'code.depscan.findings';
+  const check = 'depscanFindings';
+  const config = getConfig();
+  const missingValue = config.values.checks.code.depscanFindings.missingValue;
 
   if (!findings.length) {
     return {
       check,
       description: 'Code - Missing Dependency Scan',
-      value: 10
+      value: missingValue
     }
   }
-  const ignoreSeverityList = 'INFO, LOW';
-  const ignoreUnfixable = true;
-  const ignoreSeverities = ignoreSeverityList.toLowerCase().split(',').map(i => i.trim());
+
   let value = 0;
   const sevCounts: { [key: string]: number } = {
     critical: 0,
@@ -126,6 +132,10 @@ export async function depScanCheck(findings: DepScanFinding[]): Promise<Risk> {
     low: 0,
     info: 0
   };
+
+  const ignoreSeverityList = config.values.checks.code.depscanFindings.ignoreSeverityList;
+  const ignoreUnfixable = config.values.checks.code.depscanFindings.ignoreUnfixable;
+  const ignoreSeverities = ignoreSeverityList.toLowerCase().split(',').map(i => i.trim());
 
   for (const finding of findings) {
     if (!finding.fix_version && ignoreUnfixable) {

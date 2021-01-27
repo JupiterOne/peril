@@ -1,0 +1,30 @@
+{
+  "checks": {
+    "code": {
+      "linesChanged" : {
+        "riskStep": 100,
+        "riskValuePerStep": 1
+      },
+      "filesChanged" : {
+        "riskStep": 20,
+        "riskValuePerStep": 1
+      },
+      "depscanFindings" : {
+        "ignoreSeverityList": "INFO, LOW",
+        "ignoreUnfixable": true,
+        "missingValue": 10
+      }
+    },
+    "scm": {
+      "git": {
+        "missingValue": 5
+      },
+      "enforceGpg": {
+        "missingValue": 0.5
+      },
+      "verifyGpg": {
+        "missingValue": 0.5
+      }
+    }
+  }
+}

@@ -32,8 +32,10 @@ export async function gatherLocalSCMRisk(): Promise<RiskCategory> {
 }
 
 export async function gitRepoDirCheck(dir: string): Promise<Risk> {
-  const check = 'scm.git';
-  let value = 5;
+  const check = 'git';
+  const config = getConfig();
+  const missingValue = config.values.checks.scm.git.missingValue;
+  let value = missingValue;
   let description = 'Missing SCM - no git repo found!';
 
   if (await fs.pathExists(path.join(dir, '.git'))) {
@@ -49,8 +51,10 @@ export async function gitRepoDirCheck(dir: string): Promise<Risk> {
 }
 
 export async function gitConfigGPGCheck(cmdRunner: any = undefined): Promise<Risk> {
-  const check = 'scm.enforce.gpg';
-  let value = 0.5;
+  const check = 'enforceGpg';
+  const config = getConfig();
+  const missingValue = config.values.checks.scm.enforceGpg.missingValue;
+  let value = missingValue;
   let description = 'SCM - commit.gpgsign NOT set to true.';
 
   const cmd = await runCmd('git config --get commit.gpgsign', cmdRunner);
@@ -68,8 +72,10 @@ export async function gitConfigGPGCheck(cmdRunner: any = undefined): Promise<Ris
 }
 
 export async function gpgVerifyRecentCommitsCheck(cmdRunner: any = undefined): Promise<Risk> {
-  const check = 'scm.enforce.gpg';
-  let value = 0.5;
+  const check = 'verifyGpg';
+  const config = getConfig();
+  const missingValue = config.values.checks.scm.verifyGpg.missingValue;
+  let value = missingValue;
   let description = 'SCM - NO recent signed commits found.';
 
   const validHeadSha = await gpgVerifyCommit('HEAD', cmdRunner);
