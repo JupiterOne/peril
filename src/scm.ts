@@ -32,6 +32,7 @@ export async function gatherLocalSCMRisk(): Promise<RiskCategory> {
 }
 
 export async function gitRepoDirCheck(dir: string): Promise<Risk> {
+  const check = 'scm.git';
   let value = 5;
   let description = 'Missing SCM - no git repo found!';
 
@@ -41,13 +42,14 @@ export async function gitRepoDirCheck(dir: string): Promise<Risk> {
   }
 
   return {
-    source: 'scm.git',
+    check,
     value,
     description
   };
 }
 
 export async function gitConfigGPGCheck(cmdRunner: any = undefined): Promise<Risk> {
+  const check = 'scm.enforce.gpg';
   let value = 0.5;
   let description = 'SCM - commit.gpgsign NOT set to true.';
 
@@ -59,13 +61,14 @@ export async function gitConfigGPGCheck(cmdRunner: any = undefined): Promise<Ris
   }
 
   return {
-    source: 'scm.enforce.gpg',
+    check,
     value,
     description
   };
 }
 
 export async function gpgVerifyRecentCommitsCheck(cmdRunner: any = undefined): Promise<Risk> {
+  const check = 'scm.enforce.gpg';
   let value = 0.5;
   let description = 'SCM - NO recent signed commits found.';
 
@@ -78,7 +81,7 @@ export async function gpgVerifyRecentCommitsCheck(cmdRunner: any = undefined): P
   }
 
   return {
-    source: 'scm.enforce.gpg',
+    check,
     value,
     description
   };

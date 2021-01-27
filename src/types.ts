@@ -1,5 +1,5 @@
 export interface Risk {
-  source: string;
+  check: string;
   value: number;
   description: string;
 }

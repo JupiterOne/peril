@@ -71,6 +71,8 @@ export async function getGitDiffStats(mergeRef: string, cmdRunner: any = undefin
 }
 
 export async function locCheck(gitStats: ShortStat): Promise<Risk> {
+  const check = 'code.lines.changed';
+
   // Simple linear model for positive risk as net new lines of code:
   // Code is a liability. Therefore deletions actually represent (on average), negative risk.
   const netChangedLOC = gitStats.linesAdded - gitStats.linesRemoved;
@@ -81,13 +83,14 @@ export async function locCheck(gitStats: ShortStat): Promise<Risk> {
   const value = netChangedLOC * (riskValuePerStep / riskLOCStep);
 
   return {
-    source: 'code.lines.changed',
+    check,
     value,
     description: `Code - Risk for ~${netChangedLOC} net lines of changed code.`,
   };
 }
 
 export async function filesChangedCheck(gitStats: ShortStat, cmdRunner: any = undefined): Promise<Risk> {
+  const check = 'code.files.changed';
   // Simple linear model for increased risk due to many files changed (therefore hard to review/reason about).
   const riskFilesStep = 20;
   const riskValuePerStep = 1;
@@ -96,18 +99,18 @@ export async function filesChangedCheck(gitStats: ShortStat, cmdRunner: any = un
   const value = gitStats.filesChanged * (riskValuePerStep / riskFilesStep);
 
   return {
-    source: 'code.files.changed',
+    check,
     value,
     description: `Code - Risk for ${gitStats.filesChanged} changed files.`,
   };
 }
 
 export async function depScanCheck(findings: DepScanFinding[]): Promise<Risk> {
-  const source = 'code.depscan.findings';
+  const check = 'code.depscan.findings';
 
   if (!findings.length) {
     return {
-      source,
+      check,
       description: 'Code - Missing Dependency Scan',
       value: 10
     }
@@ -145,8 +148,8 @@ export async function depScanCheck(findings: DepScanFinding[]): Promise<Risk> {
   }
 
   return {
-    source,
-    description: validFindingCounts.join(', '),
+    check,
+    description: 'Code - Valid Dependency Scan Findings: ' + validFindingCounts.join(', '),
     value
   };
 }

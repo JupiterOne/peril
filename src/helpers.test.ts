@@ -5,12 +5,12 @@ describe('helpers', () => {
   it('calculateRiskSubtotal sums all Risk values', () => {
     const risks: Risk[] = [
       {
-        source: 'test',
+        check: 'test',
         description: 'test risk 1',
         value: 3
       },
       {
-        source: 'test',
+        check: 'test',
         description: 'test risk 2',
         value: 8
       }
