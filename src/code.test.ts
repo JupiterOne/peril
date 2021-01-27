@@ -1,6 +1,7 @@
-import { parseGitDiffShortStat, getGitDiffStats, locCheck, filesChangedCheck, parseShiftLeftDepScan, depScanCheck } from './code';
+import { parseGitDiffShortStat, getGitDiffStats, locCheck, filesChangedCheck, depScanCheck, parseShiftLeftDepScan } from './code';
 import { ShortStat } from './types';
 import { depScanFindings } from '../test/fixtures/depscanFindings';
+import { config } from '../test/fixtures/testConfig';
 
 describe('code risks', () => {
   it('parseGitDiffShortStat parses git diff stats for numeric values', () => {
@@ -36,14 +37,14 @@ describe('code risks', () => {
       linesAdded: 100,
       linesRemoved: 0
     };
-    const risk = await locCheck(stats1);
+    const risk = await locCheck(stats1, config);
     expect(risk.value).toEqual(1);
     const stats2: ShortStat = {
       filesChanged: 1,
       linesAdded: 300,
       linesRemoved: 150
     };
-    const risk2 = await locCheck(stats2);
+    const risk2 = await locCheck(stats2, config);
     expect(risk2.value).toEqual(1.5);
   });
 
@@ -53,14 +54,14 @@ describe('code risks', () => {
       linesAdded: 100,
       linesRemoved: 100
     };
-    const risk = await filesChangedCheck(stats1);
+    const risk = await filesChangedCheck(stats1, config);
     expect(risk.value).toEqual(0.5);
     const stats2: ShortStat = {
       filesChanged: 40,
       linesAdded: 300,
       linesRemoved: 150
     };
-    const risk2 = await filesChangedCheck(stats2);
+    const risk2 = await filesChangedCheck(stats2, config);
     expect(risk2.value).toEqual(2);
   });
 
@@ -77,12 +78,12 @@ describe('code risks', () => {
   });
 
   it('depScanCheck penalizes for missing scans', async () => {
-    const missingScanRisk = await depScanCheck([]);
+    const missingScanRisk = await depScanCheck([], config);
     expect(missingScanRisk.value).toBeGreaterThanOrEqual(1);
   });
 
   it('depScanCheck ignores risk for <MEDIUM severity or unfixable findings', async () => {
-    const risk = await (depScanCheck(depScanFindings));
+    const risk = await (depScanCheck(depScanFindings, config));
     expect(risk.value).toEqual(7.5);
     expect(risk.description).toMatch(/1 HIGH/);
   });

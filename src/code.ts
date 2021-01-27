@@ -1,4 +1,4 @@
-import { Risk, RiskCategory, ShortStat, CodeFacts, MaybeString, DepScanFinding } from './types';
+import { Risk, RiskCategory, ShortStat, CodeFacts, MaybeString, DepScanFinding, Config } from './types';
 import { calculateRiskSubtotal, findFiles, runCmd, formatRisk } from './helpers';
 import { getConfig } from './config';
 import path from 'path';
@@ -73,9 +73,8 @@ export async function getGitDiffStats(mergeRef: string, cmdRunner: any = undefin
   return parseGitDiffShortStat(shortstat);
 }
 
-export async function locCheck(gitStats: ShortStat): Promise<Risk> {
+export async function locCheck(gitStats: ShortStat, config: Config = getConfig()): Promise<Risk> {
   const check = 'linesChanged';
-  const config = getConfig();
 
   // Simple linear model for positive risk as net new lines of code:
   // Code is a liability. Therefore deletions actually represent (on average), negative risk.
@@ -93,9 +92,8 @@ export async function locCheck(gitStats: ShortStat): Promise<Risk> {
   }, riskCategory, check);
 }
 
-export async function filesChangedCheck(gitStats: ShortStat, cmdRunner: any = undefined): Promise<Risk> {
+export async function filesChangedCheck(gitStats: ShortStat, config: Config = getConfig()): Promise<Risk> {
   const check = 'filesChanged';
-  const config = getConfig();
   // Simple linear model for increased risk due to many files changed (therefore hard to review/reason about).
 
   const riskFilesStep = config.values.checks.code.filesChanged.riskStep;
@@ -111,9 +109,8 @@ export async function filesChangedCheck(gitStats: ShortStat, cmdRunner: any = un
   }, riskCategory, check);
 }
 
-export async function depScanCheck(findings: DepScanFinding[]): Promise<Risk> {
+export async function depScanCheck(findings: DepScanFinding[], config: Config = getConfig()): Promise<Risk> {
   const check = 'depscanFindings';
-  const config = getConfig();
   const missingValue = config.values.checks.code.depscanFindings.missingValue;
 
   if (!findings.length) {
@@ -164,8 +161,7 @@ export async function depScanCheck(findings: DepScanFinding[]): Promise<Risk> {
   }, riskCategory, check);
 }
 
-export async function gatherFacts(cmdRunner: any = undefined): Promise<CodeFacts> {
-  const config = getConfig();
+export async function gatherFacts(cmdRunner: any = undefined, config: Config = getConfig()): Promise<CodeFacts> {
   const depScanReportPattern = 'depscan-report.*.json';
   const depScanReportDir = path.join(config.flags.dir, 'reports');
   return {

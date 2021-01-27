@@ -7,23 +7,24 @@ import {
   getBranch,
   getRemote
 } from './scm';
+import { config } from '../test/fixtures/testConfig';
 
 describe('local risks', () => {
   it('gitRepoDirCheck counts missing .git folder as SCM risk', async () => {
-    const risk = await gitRepoDirCheck('/tmp');
+    const risk = await gitRepoDirCheck('/tmp', config);
     expect(risk.value).toBeGreaterThanOrEqual(5);
-    expect(risk.description).toMatch(/missing scm/i);
-    const risk2 = await gitRepoDirCheck(process.cwd());
-    expect(risk2.description).toMatch(/scm - git repo found/i);
+    expect(risk.description).toMatch(/missing/i);
+    const risk2 = await gitRepoDirCheck(process.cwd(), config);
+    expect(risk2.description).toMatch(/repo found/i);
     expect(risk2.value).toBeLessThan(0);
   });
 
   it('gitConfigGPGCheck follows commit.gpgsign setting', async () => {
-    const risk1 = await gitConfigGPGCheck(jest.fn().mockResolvedValue({failed: false, stdout: 'false'}));
+    const risk1 = await gitConfigGPGCheck(jest.fn().mockResolvedValue({failed: false, stdout: 'false'}), config);
     expect(risk1.description).toMatch(/not set to true/i);
-    const risk2 = await gitConfigGPGCheck(jest.fn().mockResolvedValue({failed: false, stdout: 'true'}));
+    const risk2 = await gitConfigGPGCheck(jest.fn().mockResolvedValue({failed: false, stdout: 'true'}), config);
     expect(risk2.description).toMatch(/enabled/i);
-    const risk3 = await gitConfigGPGCheck(jest.fn().mockResolvedValue({failed: true, stdout: ''}));
+    const risk3 = await gitConfigGPGCheck(jest.fn().mockResolvedValue({failed: true, stdout: ''}), config);
     expect(risk3.description).toMatch(/not set to true/i);
   });
 
@@ -77,9 +78,9 @@ describe('local risks', () => {
           '[GNUPG:] TRUST_ULTIMATE 0 pgp\n' +
           '[GNUPG:] VERIFICATION_COMPLIANCE_MODE 23',
     });
-    const check = await gpgVerifyRecentCommitsCheck(mockRunCmd);
+    const check = await gpgVerifyRecentCommitsCheck(mockRunCmd, config);
     expect(check.value).toBeLessThan(0.5);
-    expect(check.description).toMatch(/one or more recent signed commits found/);
+    expect(check.description).toMatch(/one or more recent signed commits found/i);
   });
 
   it('getBranch returns currenly checked-out branch', async () => {

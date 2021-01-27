@@ -1,4 +1,4 @@
-import { RiskCategory, Risk, SCMFacts, MaybeString } from './types';
+import { RiskCategory, Risk, SCMFacts, MaybeString, Config } from './types';
 import { calculateRiskSubtotal, whereis, runCmd, formatRisk } from './helpers';
 import { getConfig } from './config';
 import * as fs from 'fs-extra';
@@ -13,7 +13,7 @@ export async function gatherLocalSCMRisk(): Promise<RiskCategory> {
   const config = getConfig();
 
   // perform appropriate checks
-  checks.push(gitRepoDirCheck(config.flags.dir));
+  checks.push(gitRepoDirCheck(config.flags.dir, config));
 
   if (config.facts.scm.gitPath) {
     checks.push(gitConfigGPGCheck());
@@ -33,9 +33,8 @@ export async function gatherLocalSCMRisk(): Promise<RiskCategory> {
   };
 }
 
-export async function gitRepoDirCheck(dir: string): Promise<Risk> {
+export async function gitRepoDirCheck(dir: string, config: Config = getConfig()): Promise<Risk> {
   const check = 'git';
-  const config = getConfig();
   const missingValue = config.values.checks.scm.git.missingValue;
   let value = missingValue;
   let description = 'Missing - no repo found!';
@@ -52,9 +51,8 @@ export async function gitRepoDirCheck(dir: string): Promise<Risk> {
   }, riskCategory, check);
 }
 
-export async function gitConfigGPGCheck(cmdRunner: any = undefined): Promise<Risk> {
+export async function gitConfigGPGCheck(cmdRunner: any = undefined, config: Config = getConfig()): Promise<Risk> {
   const check = 'enforceGpg';
-  const config = getConfig();
   const missingValue = config.values.checks.scm.enforceGpg.missingValue;
   let value = missingValue;
   let description = 'commit.gpgsign NOT set to true.';
@@ -73,9 +71,8 @@ export async function gitConfigGPGCheck(cmdRunner: any = undefined): Promise<Ris
   }, riskCategory, check);
 }
 
-export async function gpgVerifyRecentCommitsCheck(cmdRunner: any = undefined): Promise<Risk> {
+export async function gpgVerifyRecentCommitsCheck(cmdRunner: any = undefined, config: Config = getConfig()): Promise<Risk> {
   const check = 'verifyGpg';
-  const config = getConfig();
   const missingValue = config.values.checks.scm.verifyGpg.missingValue;
   let value = missingValue;
   let description = 'No recent signed commits found.';
