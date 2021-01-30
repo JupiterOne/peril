@@ -13,6 +13,7 @@ class Peril extends Command {
     help: flags.help({char: 'h'}),
     dir: flags.string({char: 'd', description: 'directory path to scan', default: process.cwd()}),
     mergeRef: flags.string({char: 'm', description: 'current git ref/tag of default branch (merge target)', default: 'master'}),
+    config: flags.string({char: 'c', description: 'path to override config file'}),
     verbose: flags.boolean({char: 'v', description: 'enable verbose output'}),
   }
 

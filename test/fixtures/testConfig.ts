@@ -9,7 +9,8 @@ export const config: Config = {
   flags: {
     verbose: true,
     dir: '/Users/test/repos/jupiterone/peril/reports',
-    mergeRef: 'master'
+    mergeRef: 'master',
+    config: '/Users/test/repos/jupiterone/peril/testConfig.json'
   },
   facts: {
     scm: {

@@ -28,3 +28,11 @@ USAGE
 ...
 ```
 <!-- usagestop -->
+
+## Configuration
+
+`peril` ships with default risk values out-of-the-box, but these are all configurable. You may override any of the values found in the `defaultConfig.json` file in the root of the project, and specify a path to your local config.json override with the `-c` flag, e.g.:
+
+```shell
+peril -c ./path/to/my/config.json
+```

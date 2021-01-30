@@ -48,7 +48,8 @@
   },
   "files": [
     "/bin",
-    "/dist"
+    "/dist",
+    "defaultConfig.json"
   ],
   "oclif": {
     "bin": "peril"

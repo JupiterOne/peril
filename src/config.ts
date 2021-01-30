@@ -4,6 +4,7 @@ import * as scm from './scm';
 import * as code from './code';
 import * as fs from 'fs-extra';
 import path from 'path';
+import _ from 'lodash';
 
 type KnownEnvironmentVariables = {
   J1_API_TOKEN: string;
@@ -34,7 +35,20 @@ const config: any = {
 export async function initConfig(flags: object) {
   config.flags = flags;
   config.facts = await gatherAllFacts();
-  config.values = JSON.parse(await fs.readFile(path.join(__dirname, '../defaultConfig.json'), 'utf8'));
+  const defaultConfigValues: Config['values'] = JSON.parse(await fs.readFile(path.join(__dirname, '../defaultConfig.json'), 'utf8'));
+  const optionalConfigValues = await gatherOptionalConfigValues();
+  // deep merge optional override config into default values
+  config.values = _.merge(defaultConfigValues, optionalConfigValues);
+}
+
+export async function gatherOptionalConfigValues(config: Config = getConfig(), readFile: typeof fs.readFile = fs.readFile): Promise<Config['values'] | {}> {
+  let configValues: Config['values'];
+  try {
+    configValues = JSON.parse(await readFile(config.flags.config, 'utf8'));
+  } catch (e) {
+    return {};
+  }
+  return configValues;
 }
 
 export function getConfig(): Config {

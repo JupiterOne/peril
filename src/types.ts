@@ -87,6 +87,7 @@ export interface Flags {
   verbose: boolean;
   dir: string;
   mergeRef: string;
+  config: string;
 }
 
 export interface ShortStat {
