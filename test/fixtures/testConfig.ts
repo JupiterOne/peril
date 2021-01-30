@@ -1,5 +1,6 @@
-// import { Config } from '../../src/types';
-export const config = {
+import { Config } from '../../src/types';
+
+export const config: Config = {
   env: {
     j1AuthToken: 'REDACTED',
     j1Account: 'j1test',
@@ -16,7 +17,10 @@ export const config = {
       remote: 'github',
       remoteUrl: 'git@github.com:JupiterOne/peril.git',
       gitPath: '/usr/local/bin/git',
-      gpgPath: '/usr/local/bin/gpg'
+      gpgPath: '/usr/local/bin/gpg',
+      scans: {
+        gitleaksScanReport: '/Users/test/repos/jupiterone/peril/reports/credscan-report.sarif'
+      }
     },
     code: {
       scans: {
@@ -50,6 +54,9 @@ export const config = {
         },
         verifyGpg: {
           missingValue: 0.5
+        },
+        gitleaksFindings: {
+          perFindingValue: 10
         }
       }
     }

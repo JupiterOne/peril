@@ -24,6 +24,9 @@
       },
       "verifyGpg": {
         "missingValue": 0.5
+      },
+      "gitleaksFindings": {
+        "perFindingValue": 10
       }
     }
   }

@@ -153,6 +153,9 @@ export async function depScanCheck(findings: DepScanFinding[], config: Config = 
         validFindingCounts.push(`${sevCounts[sevKey]} ${sevKey.toUpperCase()}`);
     }
   }
+  if (!validFindingCounts.length) {
+    validFindingCounts.push('None');
+  }
 
   return formatRisk({
     check,

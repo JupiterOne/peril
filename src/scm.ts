@@ -1,5 +1,5 @@
-import { RiskCategory, Risk, SCMFacts, MaybeString, Config } from './types';
-import { calculateRiskSubtotal, whereis, runCmd, formatRisk } from './helpers';
+import { RiskCategory, Risk, SCMFacts, MaybeString, Config, GitleaksMetrics } from './types';
+import { calculateRiskSubtotal, whereis, runCmd, formatRisk, findFiles } from './helpers';
 import { getConfig } from './config';
 import * as fs from 'fs-extra';
 import * as path from 'path';
@@ -21,6 +21,8 @@ export async function gatherLocalSCMRisk(): Promise<RiskCategory> {
   if (config.facts.scm.gitPath && config.facts.scm.gpgPath) {
     checks.push(gpgVerifyRecentCommitsCheck());
   }
+
+  checks.push(gitleaksCheck(await parseGitleaksScan(config.facts.scm.scans.gitleaksScanReport)));
 
   // gather risks
   const risks = await Promise.all(checks);
@@ -97,15 +99,21 @@ export async function gpgVerifyCommit(gitref: string, cmdRunner: any = undefined
   return !cmd.failed && !!/VALIDSIG/.exec(cmd.stderr); // git puts this on stderr for some reason
 }
 
-export async function gatherFacts(cmdRunner: any = undefined): Promise<SCMFacts> {
+export async function gatherFacts(cmdRunner: any = undefined, config: Config = getConfig()): Promise<SCMFacts> {
   const { remote, remoteUrl } = await getRemote(cmdRunner);
+  const gitleaksScanReportPattern = 'credscan-report.sarif';
+  const gitleaksScanReportDir = path.join(config.flags.dir, 'reports');
+
   return {
     scm: {
       branch: await getBranch(cmdRunner),
       remote,
       remoteUrl,
       gitPath: whereis('git'),
-      gpgPath: whereis('gpg')
+      gpgPath: whereis('gpg'),
+      scans: {
+        gitleaksScanReport: (await findFiles(gitleaksScanReportDir, gitleaksScanReportPattern))[0]
+      }
     }
   };
 }
@@ -128,4 +136,58 @@ export async function getRemote(cmdRunner: any = undefined): Promise<{remote: Ma
     remoteUrl,
     remote: ['github', 'bitbucket'].find(origin => remoteUrl.indexOf(origin) > 0),
   };
+}
+
+export async function gitleaksCheck(leakMetrics: GitleaksMetrics, config: Config = getConfig()): Promise<Risk> {
+  const check = 'gitleaksFindings';
+  const perFindingValue = config.values.checks.scm.gitleaksFindings.perFindingValue;
+
+  const scalingValueBySeverity: GitleaksMetrics = {
+    critical: 1,
+    high: 0.75,
+    medium: 0.5,
+    low: 0.25
+  };
+
+  const value = [ 'critical', 'high', 'medium', 'low' ].reduce((acc, sev) => {
+    acc += leakMetrics[sev] * perFindingValue * scalingValueBySeverity[sev];
+    return acc;
+  }, 0);
+
+  // summarize valid findings in description
+  // e.g. 1 CRITICAL, 2 HIGH, etc.
+  const validFindingCounts: string[] = [];
+  for (const sevKey of Object.keys(leakMetrics)) {
+    if (sevKey === 'total') {
+      continue;
+    }
+    if (leakMetrics[sevKey] > 0) {
+        validFindingCounts.push(`${leakMetrics[sevKey]} ${sevKey.toUpperCase()}`);
+    }
+  }
+  if (!validFindingCounts.length) {
+    validFindingCounts.push('None');
+  }
+
+  return formatRisk({
+    check,
+    description: validFindingCounts.join(', '),
+    value
+  }, riskCategory, check);
+}
+
+export async function parseGitleaksScan(reportFile: MaybeString, readFile: typeof fs.readFile = fs.readFile): Promise<GitleaksMetrics> {
+  let metrics: GitleaksMetrics;
+  try {
+    const report = JSON.parse(await readFile(String(reportFile), 'utf8'));
+    metrics = report.runs[0].properties.metrics;
+  } catch (e) {
+    return {
+      critical: 0,
+      high: 0,
+      medium: 0,
+      low: 0
+    };
+  }
+  return metrics;
 }

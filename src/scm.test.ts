@@ -5,9 +5,12 @@ import {
   gpgVerifyRecentCommitsCheck,
   gatherFacts,
   getBranch,
-  getRemote
+  getRemote,
+  gitleaksCheck,
+  parseGitleaksScan
 } from './scm';
 import { config } from '../test/fixtures/testConfig';
+import { GitleaksMetrics } from './types';
 
 describe('local risks', () => {
   it('gitRepoDirCheck counts missing .git folder as SCM risk', async () => {
@@ -141,10 +144,75 @@ describe('local risks', () => {
       stdout: 'main',
       failed: false
     });
-    const facts = await gatherFacts(mockRunCmd);
+    const facts = await gatherFacts(mockRunCmd, config);
     expect(facts.scm.branch).toEqual('main');
     expect(facts.scm.remote).toEqual('bitbucket');
     expect(facts.scm.remoteUrl).toEqual(url);
     expect(facts.scm.gitPath).toBeTruthy();
   });
+
+  it('gitleaksCheck does NOT penalize for missing scans', async () => {
+    const missingScanRisk = await gitleaksCheck({
+      critical: 0,
+      high: 0,
+      medium: 0,
+      low: 0
+    }, config);
+    expect(missingScanRisk.value).toEqual(0);
+  });
+
+  it('gitleaksCheck calculates 100% of perFindingValue for criticals', async () => {
+    const risk = await gitleaksCheck({
+      total: 1,
+      critical: 1,
+      high: 0,
+      medium: 0,
+      low: 0
+    }, config);
+    expect(risk.value).toEqual(config.values.checks.scm.gitleaksFindings.perFindingValue);
+  });
+
+  it('gitleaksCheck calculates less than 100% of perFindingValue for sub-criticals', async () => {
+    const risk = await gitleaksCheck({
+      total: 2,
+      critical: 0,
+      high: 1,
+      medium: 1,
+      low: 0
+    }, config);
+    expect(risk.value).toBeLessThan(2 * config.values.checks.scm.gitleaksFindings.perFindingValue);
+  });
+
+  it('parseGitleaksScan returns zero metrics upon error reading file', async () => {
+    const risk = await parseGitleaksScan('testReport', jest.fn().mockRejectedValueOnce(new Error('Unknown error reading file')));
+    expect(risk).toEqual({
+      critical: 0,
+      high: 0,
+      medium: 0,
+      low: 0
+    });
+  });
+
+  it('parseGitleaksScan parses SARIF file into GitleaksMetrics', async () => {
+    const metrics: GitleaksMetrics = {
+      total: 3,
+      critical: 1,
+      high: 0,
+      medium: 1,
+      low: 1
+    };
+    const parsed = await parseGitleaksScan('testReport', jest.fn().mockResolvedValueOnce(JSON.stringify({
+      runs: [
+        {
+          properties: {
+            metrics: {
+              total: 3,
+              ...metrics
+            }
+          }
+        }
+      ]
+    })));
+    expect(parsed).toEqual(metrics);
+  })
 });

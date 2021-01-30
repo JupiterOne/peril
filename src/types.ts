@@ -19,6 +19,9 @@ export interface SCMFacts {
     remoteUrl: MaybeString;
     gitPath: MaybeString;
     gpgPath: MaybeString;
+    scans: {
+      gitleaksScanReport: MaybeString;
+    }
   }
 }
 
@@ -55,27 +58,31 @@ export interface SCMValues {
     },
     verifyGpg: {
       missingValue: number;
+    },
+    gitleaksFindings: {
+      perFindingValue: number;
     }
   }
 }
 
 export interface CodeValues {
   code: {
-      linesChanged : {
-        riskStep: number;
-        riskValuePerStep: number;
-      },
-      filesChanged : {
-        riskStep: number;
-        riskValuePerStep: number;
-      },
-      depscanFindings : {
-        ignoreSeverityList: string;
-        ignoreUnfixable: boolean;
-        missingValue: number;
-      }
+    linesChanged : {
+      riskStep: number;
+      riskValuePerStep: number;
+    },
+    filesChanged : {
+      riskStep: number;
+      riskValuePerStep: number;
+    },
+    depscanFindings : {
+      ignoreSeverityList: string;
+      ignoreUnfixable: boolean;
+      missingValue: number;
+    }
   }
 }
+
 export interface Flags {
   verbose: boolean;
   dir: string;
@@ -99,3 +106,10 @@ export interface DepScanFinding {
   short_description: string;
 }
 
+export interface GitleaksMetrics {
+  [index: string]: number;
+  critical: number;
+  high: number;
+  medium: number;
+  low: number;
+}
