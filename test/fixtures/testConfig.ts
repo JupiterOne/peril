@@ -59,6 +59,15 @@ export const config: Config = {
         gitleaksFindings: {
           perFindingValue: 10
         }
+      },
+      project: {
+        snykFindings: {
+          ignoreNonUpgradables: true
+        },
+        maintenanceFindings: {
+          daysLateRiskStep: 10,
+          daysLateRiskValuePerStep: 5
+        }
       }
     }
   }
