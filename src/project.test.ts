@@ -51,7 +51,6 @@ describe('project risks', () => {
     const mockNow = new Date(dueDate.getTime() + (riskStep * 24 * 60 * 60 * 1000));
     const risk = await codeRepoMaintenanceFindingsCheck(findings, config, mockNow);
     const riskValuePerStep = config.values.checks.project.maintenanceFindings.daysLateRiskValuePerStep;
-    console.log({riskStep, riskValuePerStep})
     expect(risk.value).toEqual(riskValuePerStep);
   });
 });
