@@ -3,7 +3,7 @@ import { getConfig } from './config';
 import path from 'path';
 import execa from 'execa';
 import * as fs from 'fs-extra';
-import get from 'lodash/get';
+import { get, cloneDeep } from 'lodash';
 
 export function calculateRiskSubtotal(risks: Risk[], defaultRiskValue: number): number {
   const reducer = (acc: number, val: number) => acc + val;
@@ -56,15 +56,19 @@ export async function findFiles(searchPath: string, pattern: string): Promise<st
   return files;
 }
 
-export function redactConfig(origConfig: Config): Config {
+export function redactConfig(origConfig: Config): any {
   // dup original object for safety
-  const config: Config = JSON.parse(JSON.stringify(origConfig));
+  const config: Config = cloneDeep(origConfig);
   const sensitiveKeyStrings = [ 'auth', 'token', 'api', 'credential', 'secret' ];
   Object.keys(config.env).forEach(key => {
     if(sensitiveKeyStrings.find(sensitive => key.toLowerCase().indexOf(sensitive) > 0)) {
       (config.env as any)[key] = 'REDACTED';
     }
   });
+  if (config.facts.j1.client) {
+    (config.facts.j1.client as any).j1Client = 'REDACTED';
+  }
+
   return config;
 }
 

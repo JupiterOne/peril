@@ -2,6 +2,7 @@ import * as configReader from '@jupiterone/platform-sdk-config-reader';
 import { Config, Facts } from './types';
 import * as scm from './scm';
 import * as code from './code';
+import * as jupiterone  from './jupiterone';
 import * as fs from 'fs-extra';
 import path from 'path';
 import _ from 'lodash';
@@ -23,7 +24,8 @@ export const envConfig = configReader.readConfigFromEnv(processEnv, {
 async function gatherAllFacts(): Promise<Facts> {
   const facts: any = {
     ...await scm.gatherFacts(),
-    ...await code.gatherFacts()
+    ...await code.gatherFacts(),
+    ...await jupiterone.gatherFacts()
   };
   return facts as Facts;
 }

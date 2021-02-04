@@ -1,3 +1,4 @@
+import {J1Client} from './jupiterone';
 export interface Risk {
   check: string;
   value: number;
@@ -33,7 +34,13 @@ export interface CodeFacts {
   }
 }
 
-export type Facts = SCMFacts & CodeFacts;
+export interface JupiterOneFacts {
+  j1: {
+    client?: J1Client;
+  }
+}
+
+export type Facts = SCMFacts & CodeFacts & JupiterOneFacts;
 
 export interface Config {
   env: {

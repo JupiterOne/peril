@@ -1,16 +1,15 @@
+import { JupiterOneClient } from '@jupiterone/jupiterone-client-nodejs';
 import { retry, AttemptOptions } from '@lifeomic/attempt';
 import { getConfig } from './config';
-import { Config } from './types';
-
-const JupiterOneClient = require('@jupiterone/jupiterone-client-nodejs');
+import { Config, JupiterOneFacts } from './types';
 
 export class J1Client {
   attemptOptions: Partial<AttemptOptions<unknown>>;
-  client: typeof JupiterOneClient;
-  config: Config;
+  j1Client: JupiterOneClient;
+  j1Account: string;
+  j1AuthToken: string;
 
-  constructor (config: Config = getConfig(), client = JupiterOneClient) {
-    this.config = config;
+  constructor (j1Account: string, j1AuthToken: string, client = JupiterOneClient) {
 
     this.attemptOptions = {
       initialDelay: 0,
@@ -22,8 +21,7 @@ export class J1Client {
       timeout: 60000,
     };
 
-    const { j1Account, j1AuthToken } = this.config.env;
-    this.client = new client({
+    this.j1Client = new client({
       account: String(j1Account),
       accessToken: String(j1AuthToken),
       dev: Boolean(process.env.J1_DEV_ENABLED)
@@ -31,16 +29,31 @@ export class J1Client {
   }
 
   async init() {
-    await this.client.init();
+    await this.j1Client.init();
   }
 
   getClient() {
-    return this.client;
+    return this.j1Client;
   }
 
   async gatherEntities(j1ql: string): Promise<unknown> {
     return retry(() => {
-      return this.client.queryV1(j1ql);
+      return this.j1Client.queryV1(j1ql);
     }, this.attemptOptions);
   }
+}
+
+export async function gatherFacts(config: Config = getConfig()): Promise<JupiterOneFacts> {
+  let client;
+  const { j1Account, j1AuthToken } = config.env;
+  if (j1Account && j1AuthToken) {
+    client = new J1Client(j1Account, j1AuthToken);
+    await client.init();
+  }
+
+  return {
+    j1: {
+      client
+    }
+  };
 }

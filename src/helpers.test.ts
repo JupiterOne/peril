@@ -1,5 +1,6 @@
 import { Risk, Config } from './types';
 import { calculateRiskSubtotal, whereis, redactConfig, findFiles } from './helpers';
+import { config } from '../test/fixtures/testConfig'
 
 describe('helpers', () => {
   it('calculateRiskSubtotal sums all Risk values', () => {
@@ -38,33 +39,7 @@ describe('helpers', () => {
   });
 
   it('redactConfig protects sensitive ENV vars', () => {
-    const sekretConfig: Config = {
-      env: {
-        j1AuthToken: 'sekretvalue',
-        j1Account: 'mycorp',
-        logLevel: 'info'
-      },
-      flags: {
-        mergeRef: 'main',
-        verbose: false,
-        dir: ''
-      },
-      facts: {
-        scm: {
-          branch: '',
-          remote: '',
-          remoteUrl: '',
-          gitPath: '',
-          gpgPath: ''
-        },
-        code: {
-          scans: {
-            depScanReport: ''
-          }
-        }
-      }
-    };
-    const redacted = redactConfig(sekretConfig);
+    const redacted = redactConfig(config);
     expect(redacted.env.j1AuthToken).toEqual('REDACTED');
   });
 });

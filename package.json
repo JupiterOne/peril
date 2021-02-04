@@ -15,7 +15,7 @@
   },
   "dependencies": {
     "@jupiterone/data-model": "^0.16.3",
-    "@jupiterone/jupiterone-client-nodejs": "^0.22.7",
+    "@jupiterone/jupiterone-client-nodejs": "^0.23.0",
     "@jupiterone/platform-sdk-config-reader": "^1.0.3",
     "@jupiterone/platform-sdk-logging": "^1.0.3",
     "@lifeomic/attempt": "^3.0.0",
