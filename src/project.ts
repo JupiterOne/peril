@@ -62,7 +62,11 @@ export async function codeRepoMaintenanceFindingsCheck(
   }, 0);
 
   if (validFindings.length) {
-    recommendations.push('Resolve and close open deferred_maintenance Findings.');
+    let link = '';
+    if (config.facts.j1.client) {
+      link = await config.facts.j1.client.getQueryUrl(`Find deferred_maintenance with closed=false that HAS CodeRepo with name="${config.facts.project.name}" return TREE`);
+    }
+    recommendations.push('Resolve and close open deferred_maintenance Findings. ' + link);
   }
 
   return formatRisk({
@@ -103,7 +107,11 @@ export async function codeRepoSnykFindingsCheck(
     const sevCount = validFindings.filter(f => f.properties.severity.toLowerCase() === severity).length;
     if (sevCount > 0) {
         validFindingCounts.push(`${sevCount} ${severity.toUpperCase()}`);
-        recommendations.push('Upgrade vulnerable packages.');
+        let link = '';
+        if (config.facts.j1.client) {
+          link = await config.facts.j1.client.getQueryUrl(`Find snyk_finding with open=true that HAS CodeRepo with name="${config.facts.project.name}" return TREE`);
+        }
+        recommendations.push('Upgrade vulnerable packages. ' + link);
     }
   }
   if (!validFindingCounts.length) {
