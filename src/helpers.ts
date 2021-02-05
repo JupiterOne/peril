@@ -75,6 +75,7 @@ export function redactConfig(origConfig: Config): any {
 export function formatRisk(risk: Risk, category: string, check: string): Risk {
   const newRisk = { ...risk };
   newRisk.value = parseFloat(risk.value.toFixed(2)); // truncate to 2 digits past decimal
-  newRisk.description = category.toUpperCase() + ' - ' + check + ': ' + risk.description;
+  const modifier = newRisk.value >= 0 ? '+' : '';
+  newRisk.description = category.toUpperCase() + ' - ' + check + ': ' + risk.description + ` ${modifier}${newRisk.value.toFixed(2)}`;
   return newRisk;
 }

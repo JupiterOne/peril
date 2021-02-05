@@ -27,7 +27,7 @@ export async function gatherCodeRisk(): Promise<RiskCategory> {
   const risks = await Promise.all(checks);
 
   return {
-    title: 'Code Risk',
+    title: 'CODE Risk',
     defaultRiskValue,
     risks,
     scoreSubtotal: calculateRiskSubtotal(risks, defaultRiskValue)

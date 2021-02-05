@@ -27,47 +27,56 @@ class Peril extends Command {
       console.log(JSON.stringify(redactConfig(getConfig()), null, 2));
     }
 
-    const categories: RiskCategory[] = [];
+    const riskCategories: RiskCategory[] = [];
 
     console.log('Analyzing risk factors...');
 
-    const scmRisk = await gatherLocalSCMRisk();
-    const codeRisk = await gatherCodeRisk();
-    const projectRisk = await gatherProjectRisk();
-    categories.push(scmRisk);
-    categories.push(codeRisk);
-    categories.push(projectRisk);
+    riskCategories.push(await gatherLocalSCMRisk());
+    riskCategories.push(await gatherCodeRisk());
+    riskCategories.push(await gatherProjectRisk());
 
-    if (flags.verbose) {
-      console.log(scmRisk);
-      console.log(codeRisk);
-      console.log(projectRisk);
-    }
-
-    const riskTotal = Math.max(categories.reduce((acc, c) => {
+    const riskTotal = Math.max(riskCategories.reduce((acc, c) => {
       acc += c.scoreSubtotal;
       return acc;
-    }, 0), 0);
-    const recommendationsSet: Set<string> = new Set();
-    categories.forEach(riskCategory => {
-      console.log(`${riskCategory.title}: ${riskCategory.scoreSubtotal.toFixed(2)}`);
-      riskCategory.risks.forEach(risk => {
-        risk.recommendations.forEach(recommendation => {
-          recommendationsSet.add(recommendation);
-        });
-      });
-    });
-    console.log('-----------------')
-    console.log('Total Score: ' + riskTotal.toFixed(2));
+    }, 0), 0); // floor of 0 as minimum risk value
 
-    const recommendations = Array.from(recommendationsSet);
-    if (recommendations.length) {
-      console.log('\nRecommended actions to reduce risk:');
-      recommendations.forEach(recommendation => {
-        console.log('* ' + recommendation);
+    displayOutput(riskCategories, riskTotal, flags);
+  }
+}
+
+function displayOutput(riskCategories: RiskCategory[], riskTotal: number, flags: any): void {
+  const recommendations = extractRecommendations(riskCategories);
+
+  riskCategories.forEach(riskCategory => {
+    if (flags.verbose) {
+      console.log(`\n${riskCategory.title}:`);
+      riskCategory.risks.forEach(risk => {
+        console.log(risk.description);
       });
     }
+    console.log(`${riskCategory.title}: ${riskCategory.scoreSubtotal.toFixed(2)}`);
+  });
+  console.log('-----------------')
+  console.log('Total Score: ' + riskTotal.toFixed(2));
+
+  if (recommendations.length) {
+    console.log('\nRecommended actions to reduce risk:');
+    recommendations.forEach(recommendation => {
+      console.log('* ' + recommendation);
+    });
   }
+}
+
+function extractRecommendations(categories: RiskCategory[]): string[] {
+  const recommendationsSet: Set<string> = new Set();
+  categories.forEach(riskCategory => {
+    riskCategory.risks.forEach(risk => {
+      risk.recommendations.forEach(recommendation => {
+        recommendationsSet.add(recommendation);
+      });
+    });
+  });
+  return Array.from(recommendationsSet);
 }
 
 export = Peril

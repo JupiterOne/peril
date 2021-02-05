@@ -27,7 +27,7 @@ export async function gatherProjectRisk(config: Config = getConfig()): Promise<R
   const risks = await Promise.all(checks);
 
   return {
-    title: 'Project Risk',
+    title: 'PROJECT Risk',
     defaultRiskValue,
     risks,
     scoreSubtotal: calculateRiskSubtotal(risks, defaultRiskValue)
@@ -107,15 +107,16 @@ export async function codeRepoSnykFindingsCheck(
     const sevCount = validFindings.filter(f => f.properties.severity.toLowerCase() === severity).length;
     if (sevCount > 0) {
         validFindingCounts.push(`${sevCount} ${severity.toUpperCase()}`);
-        let link = '';
-        if (config.facts.j1.client) {
-          link = await config.facts.j1.client.getQueryUrl(`Find snyk_finding with open=true that HAS CodeRepo with name="${config.facts.project.name}" return TREE`);
-        }
-        recommendations.push('Upgrade vulnerable packages. ' + link);
-    }
+   }
   }
   if (!validFindingCounts.length) {
     validFindingCounts.push('None');
+  } else {
+    let link = '';
+    if (config.facts.j1.client) {
+      link = await config.facts.j1.client.getQueryUrl(`Find snyk_finding with open=true that HAS CodeRepo with name="${config.facts.project.name}" return TREE`);
+    }
+    recommendations.push('Upgrade vulnerable packages. ' + link);
   }
 
   return formatRisk({
