@@ -1,4 +1,4 @@
-import { Risk, Config } from './types';
+import { Risk } from './types';
 import { calculateRiskSubtotal, whereis, redactConfig, findFiles } from './helpers';
 import { config } from '../test/fixtures/testConfig'
 
@@ -8,12 +8,14 @@ describe('helpers', () => {
       {
         check: 'test',
         description: 'test risk 1',
-        value: 3
+        value: 3,
+        recommendations: []
       },
       {
         check: 'test',
         description: 'test risk 2',
-        value: 8
+        value: 8,
+        recommendations: []
       }
     ];
     const defaultRiskValue = 0;

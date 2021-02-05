@@ -3,6 +3,7 @@ export interface Risk {
   check: string;
   value: number;
   description: string;
+  recommendations: string[];
 }
 
 export interface RiskCategory {
@@ -34,13 +35,19 @@ export interface CodeFacts {
   }
 }
 
+export interface ProjectFacts {
+  project: {
+    name: MaybeString;
+  }
+}
+
 export interface JupiterOneFacts {
   j1: {
     client?: J1Client;
   }
 }
 
-export type Facts = SCMFacts & CodeFacts & JupiterOneFacts;
+export type Facts = SCMFacts & CodeFacts & JupiterOneFacts & ProjectFacts;
 
 export interface Config {
   env: {

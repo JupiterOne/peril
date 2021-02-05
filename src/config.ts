@@ -3,6 +3,7 @@ import { Config, Facts } from './types';
 import * as scm from './scm';
 import * as code from './code';
 import * as jupiterone  from './jupiterone';
+import * as project from './project';
 import * as fs from 'fs-extra';
 import path from 'path';
 import _ from 'lodash';
@@ -25,7 +26,8 @@ async function gatherAllFacts(): Promise<Facts> {
   const facts: any = {
     ...await scm.gatherFacts(),
     ...await code.gatherFacts(),
-    ...await jupiterone.gatherFacts()
+    ...await jupiterone.gatherFacts(),
+    ...await project.gatherFacts()
   };
   return facts as Facts;
 }

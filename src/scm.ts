@@ -37,6 +37,7 @@ export async function gatherLocalSCMRisk(): Promise<RiskCategory> {
 
 export async function gitRepoDirCheck(dir: string, config: Config = getConfig()): Promise<Risk> {
   const check = 'git';
+  const recommendations: string[] = [];
   const missingValue = config.values.checks.scm.git.missingValue;
   let value = missingValue;
   let description = 'Missing - no repo found!';
@@ -44,17 +45,21 @@ export async function gitRepoDirCheck(dir: string, config: Config = getConfig())
   if (await fs.pathExists(path.join(dir, '.git'))) {
     value = -5;
     description = 'Repo found.';
+  } else {
+    recommendations.push('Version code in a Git repository.');
   }
 
   return formatRisk({
     check,
     value,
-    description
+    description,
+    recommendations
   }, riskCategory, check);
 }
 
 export async function gitConfigGPGCheck(cmdRunner: any = undefined, config: Config = getConfig()): Promise<Risk> {
   const check = 'enforceGpg';
+  const recommendations: string[] = [];
   const missingValue = config.values.checks.scm.enforceGpg.missingValue;
   let value = missingValue;
   let description = 'commit.gpgsign NOT set to true.';
@@ -64,17 +69,21 @@ export async function gitConfigGPGCheck(cmdRunner: any = undefined, config: Conf
   if (!cmd.failed && cmd.stdout.includes('true')) {
     value = -1;
     description = 'commit.gpgsign enabled.'
+  } else {
+    recommendations.push('Set commit.gpgsign to true for this repo.');
   }
 
   return formatRisk({
     check,
     value,
-    description
+    description,
+    recommendations
   }, riskCategory, check);
 }
 
 export async function gpgVerifyRecentCommitsCheck(cmdRunner: any = undefined, config: Config = getConfig()): Promise<Risk> {
   const check = 'verifyGpg';
+  const recommendations: string[] = [];
   const missingValue = config.values.checks.scm.verifyGpg.missingValue;
   let value = missingValue;
   let description = 'No recent signed commits found.';
@@ -85,12 +94,15 @@ export async function gpgVerifyRecentCommitsCheck(cmdRunner: any = undefined, co
   if (validHeadSha || validPrevSha) {
     value = -1;
     description = 'One or more recent signed commits found.'
+  } else {
+    recommendations.push('Sign your commits with a verified GPG key.');
   }
 
   return formatRisk({
     check,
     value,
-    description
+    description,
+    recommendations
   }, riskCategory, check);
 }
 
@@ -140,6 +152,7 @@ export async function getRemote(cmdRunner: any = undefined): Promise<{remote: Ma
 
 export async function gitleaksCheck(leakMetrics: GitleaksMetrics, config: Config = getConfig()): Promise<Risk> {
   const check = 'gitleaksFindings';
+  const recommendations: string[] = [];
   const perFindingValue = config.values.checks.scm.gitleaksFindings.perFindingValue;
 
   const scalingValueBySeverity: GitleaksMetrics = {
@@ -167,12 +180,15 @@ export async function gitleaksCheck(leakMetrics: GitleaksMetrics, config: Config
   }
   if (!validFindingCounts.length) {
     validFindingCounts.push('None');
+  } else {
+    recommendations.push('Revoke/invalidate any leaked secrets, then permanently remove them from this Git history with the BFG tool. (See https://rtyley.github.io/bfg-repo-cleaner/)');
   }
 
   return formatRisk({
     check,
     description: validFindingCounts.join(', '),
-    value
+    value,
+    recommendations
   }, riskCategory, check);
 }
 

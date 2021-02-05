@@ -75,6 +75,7 @@ export async function getGitDiffStats(mergeRef: string, cmdRunner: any = undefin
 
 export async function locCheck(gitStats: ShortStat, config: Config = getConfig()): Promise<Risk> {
   const check = 'linesChanged';
+  const recommendations: string[] = [];
 
   // Simple linear model for positive risk as net new lines of code:
   // Code is a liability. Therefore deletions actually represent (on average), negative risk.
@@ -85,15 +86,21 @@ export async function locCheck(gitStats: ShortStat, config: Config = getConfig()
   // scale net changed lines (which may be negative) by a configurable ratio to determine risk value
   const value = netChangedLOC * (riskValuePerStep / riskLOCStep);
 
+  if (value > 10) {
+    recommendations.push('Aim for smaller PRs: this makes them easier to review.');
+  }
+
   return formatRisk({
     check,
     value,
     description: `~${netChangedLOC} net lines of changed code.`,
+    recommendations
   }, riskCategory, check);
 }
 
 export async function filesChangedCheck(gitStats: ShortStat, config: Config = getConfig()): Promise<Risk> {
   const check = 'filesChanged';
+  const recommendations: string[] = [];
   // Simple linear model for increased risk due to many files changed (therefore hard to review/reason about).
 
   const riskFilesStep = config.values.checks.code.filesChanged.riskStep;
@@ -102,22 +109,29 @@ export async function filesChangedCheck(gitStats: ShortStat, config: Config = ge
   // scale changed files by a configurable ratio to determine risk value
   const value = gitStats.filesChanged * (riskValuePerStep / riskFilesStep);
 
+  if (value > 10) {
+    recommendations.push('Change fewer files per PR: this helps your reviewer(s).');
+  }
+
   return formatRisk({
     check,
     value,
     description: `${gitStats.filesChanged} changed files.`,
+    recommendations
   }, riskCategory, check);
 }
 
 export async function depScanCheck(findings: DepScanFinding[], config: Config = getConfig()): Promise<Risk> {
   const check = 'depscanFindings';
+  const recommendations: string[] = [];
   const missingValue = config.values.checks.code.depscanFindings.missingValue;
 
   if (!findings.length) {
     return {
       check,
       description: 'Code - Missing Dependency Scan',
-      value: missingValue
+      value: missingValue,
+      recommendations
     }
   }
 
@@ -155,12 +169,15 @@ export async function depScanCheck(findings: DepScanFinding[], config: Config = 
   }
   if (!validFindingCounts.length) {
     validFindingCounts.push('None');
+  } else {
+    recommendations.push('Upgrade vulnerable packages.');
   }
 
   return formatRisk({
     check,
     description: validFindingCounts.join(', '),
-    value
+    value,
+    recommendations
   }, riskCategory, check);
 }
 

@@ -28,7 +28,10 @@ export const config: Config = {
         depScanReport: '/Users/test/repos/jupiterone/peril/reports/depscan-report-nodejs.json'
       }
     },
-    j1: {}
+    j1: {},
+    project: {
+      name: 'peril'
+    }
   },
   values: {
     checks: {

@@ -1,7 +1,9 @@
-import { RiskCategory, Risk, Config, SnykFinding, DeferredMaintenanceFinding, SortedFindings } from './types';
-import { calculateRiskSubtotal, formatRisk } from './helpers';
+import { RiskCategory, Risk, Config, SnykFinding, DeferredMaintenanceFinding, SortedFindings, ProjectFacts } from './types';
+import { formatRisk, calculateRiskSubtotal } from './helpers';
 import { getConfig } from './config';
 import { get } from 'lodash';
+import fs from 'fs-extra';
+import path from 'path';
 
 const riskCategory = 'project';
 
@@ -9,18 +11,18 @@ export async function gatherProjectRisk(config: Config = getConfig()): Promise<R
   const checks: Promise<Risk>[] = [];
   const defaultRiskValue = 0;
 
-  // TODO gather repo name, j1Client facts
-  /*
-  const codeRepo = config.facts.repoName;
-  const j1Client = config.facts.j1Client;
-
-  // perform appropriate checks
+  const j1Client = config.facts.j1.client;
   if (j1Client) {
-    const findings = await j1Client.queryV1(`Find Finding that HAS CodeRepo with name='${codeRepo}'`);
-    checks.push(codeRepoFindingsCheck(findings));
+    const projectName = config.facts.project.name;
+    const findings = await j1Client.gatherEntities(`Find Finding that HAS CodeRepo with name='${projectName}'`);
+    const { snykFindings, maintenanceFindings, unknownFindings } = sortFindings(findings as any[]);
+    checks.push(codeRepoSnykFindingsCheck(snykFindings));
+    checks.push(codeRepoMaintenanceFindingsCheck(maintenanceFindings));
+    if (unknownFindings.length) {
+      console.warn(`WARNING: ${projectName} CodeRepo has ${unknownFindings.length} Findings of unknown type. These do not currently contribute to risk scoring, but should be addressed.`);
+    }
   }
 
-  */
   // gather risks
   const risks = await Promise.all(checks);
 
@@ -32,13 +34,13 @@ export async function gatherProjectRisk(config: Config = getConfig()): Promise<R
   };
 }
 
-
 export async function codeRepoMaintenanceFindingsCheck(
   findings: DeferredMaintenanceFinding[],
   config: Config = getConfig(),
   now: Date = new Date()
 ): Promise<Risk> {
   const check = 'deferredMaintenanceFindings';
+  const recommendations: string[] = [];
 
   const validFindings = findings.filter(f => {
     const {closed, dueDate } = f.properties;
@@ -59,10 +61,15 @@ export async function codeRepoMaintenanceFindingsCheck(
     return acc;
   }, 0);
 
+  if (validFindings.length) {
+    recommendations.push('Resolve and close open deferred_maintenance Findings.');
+  }
+
   return formatRisk({
     check,
     description: `${validFindings.length} past due maintenance items`,
-    value
+    value,
+    recommendations
   }, riskCategory, check);
 
 }
@@ -72,6 +79,7 @@ export async function codeRepoSnykFindingsCheck(
   config: Config = getConfig()
 ): Promise<Risk> {
   const check = 'snykFindings';
+  const recommendations: string[] = [];
   const ignoreNonUpgradables = config.values.checks.project.snykFindings.ignoreNonUpgradables;
 
   const validFindings = findings.filter(f => {
@@ -95,6 +103,7 @@ export async function codeRepoSnykFindingsCheck(
     const sevCount = validFindings.filter(f => f.properties.severity.toLowerCase() === severity).length;
     if (sevCount > 0) {
         validFindingCounts.push(`${sevCount} ${severity.toUpperCase()}`);
+        recommendations.push('Upgrade vulnerable packages.');
     }
   }
   if (!validFindingCounts.length) {
@@ -104,7 +113,8 @@ export async function codeRepoSnykFindingsCheck(
   return formatRisk({
     check,
     description: validFindingCounts.join(', '),
-    value
+    value,
+    recommendations
   }, riskCategory, check);
 }
 
@@ -133,5 +143,22 @@ export function sortFindings(findings: any[]): SortedFindings {
     snykFindings,
     maintenanceFindings,
     unknownFindings
+  };
+}
+
+export async function gatherFacts(config: Config = getConfig()): Promise<ProjectFacts> {
+  const { dir } = config.flags;
+  const nameFile = path.join(dir, 'project.name')
+  let name;
+  if (await fs.pathExists(nameFile)) {
+    name = (await fs.readFile(nameFile, 'utf8')).trim();
+  } else {
+    name = dir.split(path.sep).pop(); // default to directory name
+  }
+
+  return {
+    project: {
+      name
+    }
   };
 }
