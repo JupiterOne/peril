@@ -59,6 +59,7 @@ export interface Config {
   facts: Facts;
   values: {
     checks: SCMValues & CodeValues & ProjectValues
+    riskTolerance: number;
   }
 }
 

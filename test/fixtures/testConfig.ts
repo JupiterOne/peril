@@ -34,6 +34,7 @@ export const config: Config = {
     }
   },
   values: {
+    riskTolerance: 20,
     checks: {
       code: {
         linesChanged: {

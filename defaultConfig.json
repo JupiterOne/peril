@@ -1,4 +1,5 @@
 {
+  "riskTolerance": 20,
   "checks": {
     "code": {
       "linesChanged" : {

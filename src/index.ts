@@ -41,6 +41,17 @@ class Peril extends Command {
     }, 0), 0); // floor of 0 as minimum risk value
 
     displayOutput(riskCategories, riskTotal, flags);
+    const config = getConfig();
+    const tolerance = config.values.riskTolerance;
+    const business = config.env.j1Account ? config.env.j1Account : 'the business';
+    if (riskTotal > tolerance) {
+      console.log(`\nFinal score is ${(riskTotal - tolerance).toFixed(2)} points over the limit configured by ${business} (${tolerance}).`);
+      console.log('❌ These changes are too risky! Please attend to the recommendations above to lower the overall risk.');
+      process.exit(1);
+    } else {
+      console.log(`\n✅ The risk associated with these changes is accepted by ${business}.`);
+    }
+    process.exit(0);
   }
 }
 
@@ -80,3 +91,4 @@ function extractRecommendations(categories: RiskCategory[]): string[] {
 }
 
 export = Peril
+
