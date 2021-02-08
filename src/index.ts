@@ -17,6 +17,7 @@ class Peril extends Command {
     mergeRef: flags.string({char: 'm', description: 'current git ref/tag of default branch (merge target)', default: 'master'}),
     config: flags.string({char: 'c', description: 'path to override config file'}),
     verbose: flags.boolean({char: 'v', description: 'enable verbose output'}),
+    accept: flags.boolean({description: 'accept all risk (do not exit with non-zero status)'})
   }
 
   async run() {
@@ -46,8 +47,12 @@ class Peril extends Command {
     const business = config.env.j1Account ? config.env.j1Account : 'the business';
     if (riskTotal > tolerance) {
       console.log(`\nFinal score is ${(riskTotal - tolerance).toFixed(2)} points over the limit configured by ${business} (${tolerance}).`);
-      console.log('❌ These changes are too risky! Please attend to the recommendations above to lower the overall risk.');
-      process.exit(1);
+      if (flags.accept) {
+        console.log(`🚧 The risk associated with these changes has been force-approved by ${business}.`);
+      } else {
+        console.log('❌ These changes are too risky! Please attend to the recommendations above to lower the overall risk.');
+        process.exit(1);
+      }
     } else {
       console.log(`\n✅ The risk associated with these changes is accepted by ${business}.`);
     }
