@@ -66,6 +66,7 @@ export function redactConfig(origConfig: Config): any {
     }
   });
   if (config.facts.j1.client) {
+    config.facts.j1.client.accessToken = 'REDACTED';
     (config.facts.j1.client as any).j1Client = 'REDACTED';
   }
 
