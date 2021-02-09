@@ -145,6 +145,16 @@ export async function threatModelCheck(
     }, riskCategory, check);
   }
 
+  if (!config.facts.project.threatDragonModels.length) {
+    recommendations.push(`Perform threat analysis with OWASP ThreatDragon, and commit the JSON output to the '${config.facts.project.threatDragonModelsDir}' folder`);
+    return formatRisk({
+      check,
+      description: 'No ThreatDragon models found.',
+      value: config.values.checks.project.threatModels.missingValue,
+      recommendations
+    }, riskCategory, check);
+  }
+
   interface Threat {
     severity: string;
     status: string;
@@ -264,7 +274,8 @@ export async function gatherFacts(config: Config = getConfig()): Promise<Project
   return {
     project: {
       name,
-      threatDragonModels: models
+      threatDragonModels: models,
+      threatDragonModelsDir: modelsDir
     }
   };
 }

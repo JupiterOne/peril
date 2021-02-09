@@ -1,4 +1,4 @@
-import { sortFindings, codeRepoSnykFindingsCheck, codeRepoMaintenanceFindingsCheck } from './project';
+import { sortFindings, codeRepoSnykFindingsCheck, codeRepoMaintenanceFindingsCheck, threatModelCheck } from './project';
 import repoFindings from '../test/fixtures/j1RepoFindings.json';
 import snykFindings from '../test/fixtures/j1RepoSnykFindings.json';
 import maintenanceFindings from '../test/fixtures/j1RepoDMFindings.json';
@@ -53,4 +53,37 @@ describe('project risks', () => {
     const riskValuePerStep = config.values.checks.project.maintenanceFindings.daysLateRiskValuePerStep;
     expect(risk.value).toEqual(riskValuePerStep);
   });
+
+  it('threatModelCheck assigns configurable risk based on unmitigated threats from ThreatDragon models', async () => {
+    const risk = await threatModelCheck(config);
+    const { highRiskValue, mediumRiskValue, lowRiskValue } = config.values.checks.project.threatModels
+    const highs = 1;
+    const mediums = 1;
+    const lows = 0;
+    const expectedValue = highRiskValue * highs + mediumRiskValue * mediums + lowRiskValue * lows;
+    expect(risk.value).toEqual(expectedValue);
+  });
+
+  it('threatModelCheck returns zero risk when disabled', async () => {
+    const cfg = cloneDeep(config);
+    cfg.values.checks.project.threatModels.enabled = false;
+    const risk = await threatModelCheck(cfg);
+    expect(risk.value).toEqual(0);
+  });
+
+  it('threatModelCheck returns configurable missing value when no models are discovered at fact-time', async () => {
+    const cfg = cloneDeep(config);
+    cfg.facts.project.threatDragonModels = [];
+    const risk = await threatModelCheck(cfg);
+    expect(risk.value).toEqual(cfg.values.checks.project.threatModels.missingValue);
+  });
+
+  it('threatModelCheck returns configurable credit value when all threats have been mitigated', async () => {
+    const cfg = cloneDeep(config);
+    cfg.facts.project.threatDragonModels = [ __dirname + '/../test/fixtures/threatDragonMitigated.json' ];
+    const risk = await threatModelCheck(cfg);
+    expect(risk.value).toEqual(cfg.values.checks.project.threatModels.allMitigatedCredit);
+  });
+
+
 });

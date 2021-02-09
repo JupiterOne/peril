@@ -1,10 +1,12 @@
+import Peril from '~/src';
 import { Config } from '../../src/types';
 
 export const config: Config = {
   env: {
     j1AuthToken: 'REDACTED',
     j1Account: 'j1test',
-    logLevel: 'info'
+    logLevel: 'info',
+    threatDragonDir: 'ThreatDragonModels'
   },
   flags: {
     verbose: true,
@@ -30,6 +32,8 @@ export const config: Config = {
     },
     j1: {},
     project: {
+      threatDragonModels: [ __dirname + '/threatDragon.json' ],
+      threatDragonModelsDir: 'ThreatDragonModels',
       name: 'peril'
     }
   },
@@ -48,7 +52,8 @@ export const config: Config = {
         depscanFindings: {
           ignoreSeverityList: 'INFO, LOW',
           ignoreUnfixable: true,
-          missingValue: 10
+          missingValue: 10,
+          noVulnerabilitiesCredit: 0
         }
       },
       scm: {
@@ -72,7 +77,15 @@ export const config: Config = {
         maintenanceFindings: {
           daysLateRiskStep: 10,
           daysLateRiskValuePerStep: 5
-        }
+        },
+        threatModels: {
+         enabled: true,
+         highRiskValue: 10,
+         mediumRiskValue: 5,
+         lowRiskValue: 1,
+         allMitigatedCredit: -3,
+         missingValue: 5
+      }
       }
     }
   }

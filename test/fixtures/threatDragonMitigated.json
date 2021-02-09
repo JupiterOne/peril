@@ -131,13 +131,13 @@
                 }
               ],
               "z": 4,
-              "hasOpenThreats": true,
+              "hasOpenThreats": false,
               "threats": [
                 {
                   "ruleId": "4adaa48a-0345-4533-a189-64c98c4420dd",
                   "title": "Generic tampering threat",
                   "type": "Tampering",
-                  "status": "Open",
+                  "status": "Mitigated",
                   "severity": "Medium",
                   "description": "A generic tampering threat"
                 },
@@ -145,7 +145,7 @@
                   "ruleId": "13000296-b17d-4b72-9cc4-f5cc33f80e4c",
                   "title": "Generic information disclosure threat",
                   "type": "Information disclosure",
-                  "status": "Open",
+                  "status": "Mitigated",
                   "severity": "High",
                   "description": "A generic information disclosure threat"
                 }

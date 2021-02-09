@@ -39,6 +39,7 @@ export interface ProjectFacts {
   project: {
     name: MaybeString;
     threatDragonModels: MaybeString[];
+    threatDragonModelsDir: string;
   }
 }
 
@@ -116,6 +117,7 @@ export interface ProjectValues {
       mediumRiskValue: number;
       lowRiskValue: number;
       allMitigatedCredit: number;
+      missingValue: number;
     }
   }
 }
