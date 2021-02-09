@@ -1,0 +1,521 @@
+{
+  "summary": {
+    "title": "Peril CLI Tool",
+    "owner": "erich.smith",
+    "description": "CLI tool for analyzing project risk"
+  },
+  "detail": {
+    "contributors": [],
+    "diagrams": [
+      {
+        "title": "Fact Discovery",
+        "thumbnail": "./public/content/images/thumbnail.jpg",
+        "id": 0,
+        "$$hashKey": "object:20",
+        "diagramJson": {
+          "cells": [
+            {
+              "type": "tm.Actor",
+              "size": {
+                "width": 160,
+                "height": 80
+              },
+              "position": {
+                "x": 60,
+                "y": 146
+              },
+              "angle": 0,
+              "id": "e510f12d-c662-4888-aeb7-b0ae9360925d",
+              "z": 1,
+              "hasOpenThreats": false,
+              "description": "Invoker of peril CLI",
+              "outOfScope": true,
+              "reasonOutOfScope": "CI/CD security is handled CSP, or Vendor and ultimately responsibility of Peril user.",
+              "attrs": {
+                ".element-shape": {
+                  "class": "element-shape hasNoOpenThreats isOutOfScope"
+                },
+                "text": {
+                  "text": "CI/CD System"
+                },
+                ".element-text": {
+                  "class": "element-text hasNoOpenThreats isInScope"
+                }
+              }
+            },
+            {
+              "type": "tm.Process",
+              "size": {
+                "width": 100,
+                "height": 100
+              },
+              "position": {
+                "x": 326,
+                "y": 139
+              },
+              "angle": 0,
+              "id": "a3c364ed-1f01-4eae-a7d3-7e27e23ea8bb",
+              "z": 2,
+              "hasOpenThreats": false,
+              "description": "Gather facts prior to performing checks",
+              "threats": [
+                {
+                  "ruleId": "13000296-b17d-4b72-9cc4-f5cc33f80e4c",
+                  "title": "ID: potential display of sensitive values",
+                  "type": "Information disclosure",
+                  "status": "Mitigated",
+                  "severity": "Medium",
+                  "description": "Sensitive values discovered at fact-gathering time may later leak if displayed via log or stack trace.",
+                  "mitigation": "Application code redacts sensitive facts from configuration before display.",
+                  "$$hashKey": "object:252"
+                }
+              ],
+              "attrs": {
+                ".element-shape": {
+                  "class": "element-shape hasNoOpenThreats isInScope"
+                },
+                "text": {
+                  "text": "Fact Gathering"
+                },
+                ".element-text": {
+                  "class": "element-text hasNoOpenThreats isInScope"
+                }
+              }
+            },
+            {
+              "type": "tm.Boundary",
+              "size": {
+                "width": 10,
+                "height": 10
+              },
+              "smooth": true,
+              "source": {
+                "id": "a3c364ed-1f01-4eae-a7d3-7e27e23ea8bb"
+              },
+              "target": {
+                "id": "e510f12d-c662-4888-aeb7-b0ae9360925d"
+              },
+              "vertices": [],
+              "id": "d2025ef6-9be7-4b5d-9141-4d2f0914fb23",
+              "z": 3,
+              "attrs": {}
+            },
+            {
+              "type": "tm.Store",
+              "size": {
+                "width": 160,
+                "height": 80
+              },
+              "position": {
+                "x": 591,
+                "y": 368
+              },
+              "angle": 0,
+              "id": "6fad36e8-055d-45ae-9a12-c09e35316d09",
+              "z": 4,
+              "hasOpenThreats": false,
+              "description": "Process ENV",
+              "storesCredentials": true,
+              "threats": [
+                {
+                  "ruleId": "13000296-b17d-4b72-9cc4-f5cc33f80e4c",
+                  "title": "Information Disclosure Threat",
+                  "type": "Information disclosure",
+                  "status": "Mitigated",
+                  "severity": "Medium",
+                  "description": "Sensitive credentials are expected to be passed in from ENV. These may leak out via logs, stack-traces, etc.",
+                  "mitigation": "Application redacts sensitive values before debug logging.",
+                  "$$hashKey": "object:118"
+                }
+              ],
+              "attrs": {
+                ".element-shape": {
+                  "class": "element-shape hasNoOpenThreats isInScope"
+                },
+                "text": {
+                  "text": "ENV"
+                },
+                ".element-text": {
+                  "class": "element-text hasNoOpenThreats isInScope"
+                }
+              }
+            },
+            {
+              "type": "tm.Boundary",
+              "size": {
+                "width": 10,
+                "height": 10
+              },
+              "smooth": true,
+              "source": {
+                "id": "a3c364ed-1f01-4eae-a7d3-7e27e23ea8bb"
+              },
+              "target": {
+                "id": "6fad36e8-055d-45ae-9a12-c09e35316d09"
+              },
+              "vertices": [],
+              "id": "6f8ac7ed-91bf-45ec-9025-5c0e014a6dad",
+              "z": 5,
+              "attrs": {}
+            },
+            {
+              "type": "tm.Store",
+              "size": {
+                "width": 160,
+                "height": 80
+              },
+              "position": {
+                "x": 284,
+                "y": 362
+              },
+              "angle": 0,
+              "id": "63192e3a-651c-442a-aab6-d28cc61f594f",
+              "z": 6,
+              "hasOpenThreats": false,
+              "description": "Config values may be optionally specified in config file",
+              "attrs": {
+                ".element-shape": {
+                  "class": "element-shape hasNoOpenThreats isInScope"
+                },
+                "text": {
+                  "text": "Config File"
+                },
+                ".element-text": {
+                  "class": "element-text hasNoOpenThreats isInScope"
+                }
+              }
+            },
+            {
+              "type": "tm.Boundary",
+              "size": {
+                "width": 10,
+                "height": 10
+              },
+              "smooth": true,
+              "source": {
+                "id": "a3c364ed-1f01-4eae-a7d3-7e27e23ea8bb"
+              },
+              "target": {
+                "id": "63192e3a-651c-442a-aab6-d28cc61f594f"
+              },
+              "vertices": [],
+              "id": "b229bd72-76a0-4280-91cf-c81fe587c57d",
+              "z": 7,
+              "attrs": {}
+            },
+            {
+              "type": "tm.Store",
+              "size": {
+                "width": 160,
+                "height": 80
+              },
+              "position": {
+                "x": 42,
+                "y": 356
+              },
+              "angle": 0,
+              "id": "18283224-9822-4cda-880e-4af596b92e07",
+              "z": 10,
+              "hasOpenThreats": false,
+              "description": "Authorized users (typically security team) may sign tokens that override risk values or force-accept risk.",
+              "isSigned": true,
+              "threats": [
+                {
+                  "ruleId": "87bc37e2-798e-4d68-bb96-feb1da26da48",
+                  "title": "Copy/Pasted overrides may be inserted into project repos.",
+                  "type": "Repudiation",
+                  "status": "Mitigated",
+                  "severity": "High",
+                  "description": "A previous, valid override token may be copy/pasted into another project repo, in an attempt to re-use the override.",
+                  "$$hashKey": "object:204",
+                  "mitigation": "Mitigated by run-time code at check-time. (See other diagram)"
+                }
+              ],
+              "attrs": {
+                ".element-shape": {
+                  "class": "element-shape hasNoOpenThreats isInScope"
+                },
+                "text": {
+                  "text": "Local Project Overrides"
+                },
+                ".element-text": {
+                  "class": "element-text hasNoOpenThreats isInScope"
+                }
+              }
+            },
+            {
+              "type": "tm.Boundary",
+              "size": {
+                "width": 10,
+                "height": 10
+              },
+              "smooth": true,
+              "source": {
+                "id": "a3c364ed-1f01-4eae-a7d3-7e27e23ea8bb"
+              },
+              "target": {
+                "id": "18283224-9822-4cda-880e-4af596b92e07"
+              },
+              "vertices": [],
+              "id": "8811388c-f674-40cf-a462-c87e49c2cfd6",
+              "z": 11,
+              "attrs": {}
+            }
+          ]
+        },
+        "size": {
+          "height": 590,
+          "width": 1161
+        }
+      },
+      {
+        "title": "Checks",
+        "thumbnail": "./public/content/images/thumbnail.jpg",
+        "id": 1,
+        "$$hashKey": "object:22",
+        "diagramJson": {
+          "cells": [
+            {
+              "type": "tm.Process",
+              "size": {
+                "width": 100,
+                "height": 100
+              },
+              "position": {
+                "x": 45,
+                "y": 45
+              },
+              "angle": 0,
+              "id": "90a0426f-f661-443d-b6aa-474f447b7f3c",
+              "z": 1,
+              "hasOpenThreats": false,
+              "description": "Post fact-gathering checks that gather risk elements.",
+              "threats": [
+                {
+                  "ruleId": "b2a6d40d-d3f8-4750-8e4d-c02cc84b13dc",
+                  "title": "Malicious repo commiters can copy/paste override tokens",
+                  "type": "Spoofing",
+                  "status": "Mitigated",
+                  "severity": "Medium",
+                  "description": "Commiters can attempt to spoof valid, signed override tokens by copy/pasting from another repository.",
+                  "mitigation": "Signed token payloads include project/repo name, and this is verified at runtime.",
+                  "$$hashKey": "object:717"
+                }
+              ],
+              "attrs": {
+                ".element-shape": {
+                  "class": "element-shape hasNoOpenThreats isInScope"
+                },
+                "text": {
+                  "text": "Runtime\nChecks"
+                },
+                ".element-text": {
+                  "class": "element-text hasNoOpenThreats isInScope"
+                }
+              }
+            },
+            {
+              "type": "tm.Store",
+              "size": {
+                "width": 160,
+                "height": 80
+              },
+              "position": {
+                "x": 536,
+                "y": 23
+              },
+              "angle": 0,
+              "id": "2d964e79-afac-4184-b66d-b5de4b854206",
+              "z": 2,
+              "hasOpenThreats": false,
+              "description": "introspect the local repo via `git` commands",
+              "threats": [
+                {
+                  "ruleId": "87bc37e2-798e-4d68-bb96-feb1da26da48",
+                  "title": "Malicious commits could impersonate someone other than commit authors.",
+                  "type": "Repudiation",
+                  "status": "Mitigated",
+                  "severity": "Medium",
+                  "description": "It is possible to craft git commits with arbitrary author name/email values.",
+                  "mitigation": "GPG signing is supported and encouraged by peril.",
+                  "$$hashKey": "object:630"
+                }
+              ],
+              "attrs": {
+                ".element-shape": {
+                  "class": "element-shape hasNoOpenThreats isInScope"
+                },
+                "text": {
+                  "text": "git"
+                },
+                ".element-text": {
+                  "class": "element-text hasNoOpenThreats isInScope"
+                }
+              }
+            },
+            {
+              "type": "tm.Store",
+              "size": {
+                "width": 160,
+                "height": 80
+              },
+              "position": {
+                "x": 360,
+                "y": 209
+              },
+              "angle": 0,
+              "id": "29f0a17a-649e-4259-86d4-3c24fcfdde13",
+              "z": 3,
+              "hasOpenThreats": true,
+              "threats": [
+                {
+                  "ruleId": "4adaa48a-0345-4533-a189-64c98c4420dd",
+                  "title": "It is possible to inject fake scan data into repo fs.",
+                  "type": "Tampering",
+                  "status": "Mitigated",
+                  "severity": "Medium",
+                  "description": "A malicious repo author could commit fake scan data to a path with Peril auto-discovers and treats as genuine.",
+                  "mitigation": "Transfer. It is expected that the caller of peril has run sideband security scanning, such as ShiftLeft/scan, in a CI/CD step prior to invoking peril.",
+                  "$$hashKey": "object:653"
+                },
+                {
+                  "ruleId": "edb05d76-a695-455f-947b-7d67b78bc31d",
+                  "title": "Malicious JSON DoS threat",
+                  "type": "Denial of service",
+                  "status": "Open",
+                  "severity": "Low",
+                  "description": "It is possible for malicous repo committers to commit very large JSON files that cause the parser to behave poorly.",
+                  "$$hashKey": "object:676"
+                }
+              ],
+              "attrs": {
+                ".element-shape": {
+                  "class": "element-shape hasOpenThreats isInScope"
+                },
+                "text": {
+                  "text": "local FS"
+                },
+                ".element-text": {
+                  "class": "element-text hasOpenThreats isInScope"
+                }
+              }
+            },
+            {
+              "type": "tm.Store",
+              "size": {
+                "width": 160,
+                "height": 80
+              },
+              "position": {
+                "x": 46,
+                "y": 306
+              },
+              "angle": 0,
+              "id": "1c2b6d0f-c607-4b93-925d-8c334df11e2d",
+              "z": 4,
+              "hasOpenThreats": true,
+              "description": "Query J1 for relevant risk elements.",
+              "isEncrypted": true,
+              "threats": [
+                {
+                  "ruleId": "4adaa48a-0345-4533-a189-64c98c4420dd",
+                  "title": "Tampering of graph data threat",
+                  "type": "Tampering",
+                  "status": "Open",
+                  "severity": "Medium",
+                  "description": "It is possible for users of the J1 system to tamper with graph data in an attempt to modify Peril risk results.",
+                  "$$hashKey": "object:685"
+                },
+                {
+                  "ruleId": "edb05d76-a695-455f-947b-7d67b78bc31d",
+                  "title": "DoS threat",
+                  "type": "Denial of service",
+                  "status": "Mitigated",
+                  "severity": "Low",
+                  "description": "If JupiterOne is behaving poorly, or down, this could cause peril to block, effectively DoSing CI.",
+                  "mitigation": "Retry logic in code has sensible timeouts.",
+                  "$$hashKey": "object:708"
+                }
+              ],
+              "attrs": {
+                ".element-shape": {
+                  "class": "element-shape hasOpenThreats isInScope"
+                },
+                "text": {
+                  "text": "JupiterOne"
+                },
+                ".element-text": {
+                  "class": "element-text hasOpenThreats isInScope"
+                }
+              }
+            },
+            {
+              "type": "tm.Boundary",
+              "size": {
+                "width": 10,
+                "height": 10
+              },
+              "smooth": true,
+              "source": {
+                "id": "90a0426f-f661-443d-b6aa-474f447b7f3c"
+              },
+              "target": {
+                "id": "1c2b6d0f-c607-4b93-925d-8c334df11e2d"
+              },
+              "vertices": [
+                {
+                  "x": 87,
+                  "y": 235
+                }
+              ],
+              "id": "b4748d3d-462c-46a6-b274-844bdc6cf384",
+              "z": 5,
+              "attrs": {}
+            },
+            {
+              "type": "tm.Boundary",
+              "size": {
+                "width": 10,
+                "height": 10
+              },
+              "smooth": true,
+              "source": {
+                "id": "90a0426f-f661-443d-b6aa-474f447b7f3c"
+              },
+              "target": {
+                "id": "29f0a17a-649e-4259-86d4-3c24fcfdde13"
+              },
+              "vertices": [],
+              "id": "ef0f7076-3657-4e69-9ad8-1a0eebee1cde",
+              "z": 6,
+              "attrs": {}
+            },
+            {
+              "type": "tm.Boundary",
+              "size": {
+                "width": 10,
+                "height": 10
+              },
+              "smooth": true,
+              "source": {
+                "id": "90a0426f-f661-443d-b6aa-474f447b7f3c"
+              },
+              "target": {
+                "id": "2d964e79-afac-4184-b66d-b5de4b854206"
+              },
+              "vertices": [],
+              "id": "d34e89b3-5a10-461c-90f4-929f80385e92",
+              "z": 7,
+              "attrs": {}
+            }
+          ]
+        },
+        "size": {
+          "height": 590,
+          "width": 792
+        }
+      }
+    ],
+    "reviewer": "adam.williams"
+  }
+}
