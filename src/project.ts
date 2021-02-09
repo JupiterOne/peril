@@ -252,6 +252,9 @@ export async function gatherFacts(config: Config = getConfig()): Promise<Project
   const threatDragonModelsPattern = '.*.json';
   const threatDragonModelsDir = path.join(config.flags.dir, modelsDir);
   let models: string[] = [];
+  // check top-level dir
+  models = models.concat(await findFiles(threatDragonModelsDir, threatDragonModelsPattern));
+  // check any sub-dirs
   for (const ent of await fs.readdir(threatDragonModelsDir)) {
     const subdir = path.join(threatDragonModelsDir, ent);
     if ((await fs.stat(subdir)).isDirectory()) {
