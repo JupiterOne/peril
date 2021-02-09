@@ -79,7 +79,7 @@ export async function locCheck(gitStats: ShortStat, config: Config = getConfig()
 
   // Simple linear model for positive risk as net new lines of code:
   // Code is a liability. Therefore deletions actually represent (on average), negative risk.
-  const netChangedLOC = gitStats.linesAdded - gitStats.linesRemoved;
+  const netChangedLOC = (gitStats.linesAdded || 0) - (gitStats.linesRemoved || 0);
   const riskLOCStep = config.values.checks.code.linesChanged.riskStep;
   const riskValuePerStep = config.values.checks.code.linesChanged.riskValuePerStep;
 
