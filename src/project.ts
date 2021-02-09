@@ -1,5 +1,5 @@
 import { RiskCategory, Risk, Config, SnykFinding, DeferredMaintenanceFinding, SortedFindings, ProjectFacts } from './types';
-import { formatRisk, calculateRiskSubtotal } from './helpers';
+import { formatRisk, calculateRiskSubtotal, findFiles } from './helpers';
 import { getConfig } from './config';
 import { get } from 'lodash';
 import fs from 'fs-extra';
@@ -22,6 +22,7 @@ export async function gatherProjectRisk(config: Config = getConfig()): Promise<R
       console.warn(`WARNING: ${projectName} CodeRepo has ${unknownFindings.length} Findings of unknown type. These do not currently contribute to risk scoring, but should be addressed.`);
     }
   }
+  checks.push(threatModelCheck());
 
   // gather risks
   const risks = await Promise.all(checks);
@@ -127,6 +128,88 @@ export async function codeRepoSnykFindingsCheck(
   }, riskCategory, check);
 }
 
+export async function threatModelCheck(
+  config: Config = getConfig()
+): Promise<Risk> {
+  const check = 'threatModels';
+  const recommendations: string[] = [];
+  const enabled = config.values.checks.project.threatModels.enabled;
+  let value = 0;
+
+  if (!enabled) {
+    return formatRisk({
+      check,
+      description: 'threatModels check is disabled',
+      value,
+      recommendations
+    }, riskCategory, check);
+  }
+
+  interface Threat {
+    severity: string;
+    status: string;
+    title: string;
+    type: string;
+  }
+
+  const openThreats: Threat[] = [];
+  const mitigatedThreats: Threat[] = [];
+  const sevValues: { [index: string]: number; } = {
+    low: config.values.checks.project.threatModels.lowRiskValue,
+    medium: config.values.checks.project.threatModels.mediumRiskValue,
+    high: config.values.checks.project.threatModels.highRiskValue,
+  };
+
+  try {
+    for (const modelFile of config.facts.project.threatDragonModels) {
+      // json.detail.diagrams[0].diagramJson.cells[3].threats[1].severity = "Low";
+      // json.detail.diagrams[0].diagramJson.cells[3].threats[1].status = "Open";
+      const model = JSON.parse(await fs.readFile(String(modelFile), 'utf8'));
+      for (const diagram of get(model, 'detail.diagrams', [])) {
+        for (const cells of get(diagram, 'diagramJson.cells', [])) {
+          for (const threat of get(cells, 'threats', []) as Threat[]) {
+            if (String(threat.status).toLowerCase() === 'mitigated') {
+              mitigatedThreats.push(threat);
+              continue;
+            }
+            const sev = String(threat.severity).toLowerCase();
+            if (['high', 'medium', 'low'].includes(sev)) {
+              openThreats.push(threat);
+              value += sevValues[sev];
+            }
+          }
+        }
+      }
+    }
+  } catch(e) {
+    console.warn('Could not parse one or more threatModel files: ' + e);
+  }
+
+  if (openThreats.length) {
+    recommendations.push('Mitigate open design weakness(es) in threat model.');
+  }
+
+  const openThreatCounts: string[] = [];
+  for (const severity of [ 'high', 'medium', 'low' ]) {
+    const sevCount = openThreats.filter(t => t.severity.toLowerCase() === severity).length;
+    if (sevCount > 0) {
+      openThreatCounts.push(`${sevCount} ${severity.toUpperCase()}`);
+    }
+  }
+
+  if (!openThreatCounts.length && mitigatedThreats.length) {
+    value += config.values.checks.project.threatModels.allMitigatedCredit;
+    openThreatCounts.push('All modeled threats have been mitigated! 🎉');
+  }
+
+  return formatRisk({
+    check,
+    description: openThreatCounts.join(', '),
+    value,
+    recommendations
+  }, riskCategory, check);
+}
+
 export function sortFindings(findings: any[]): SortedFindings {
   const snykFindings: SnykFinding[] = [];
   const maintenanceFindings: DeferredMaintenanceFinding[] = [];
@@ -165,9 +248,20 @@ export async function gatherFacts(config: Config = getConfig()): Promise<Project
     name = dir.split(path.sep).pop(); // default to directory name
   }
 
+  const modelsDir = config.env.threatDragonDir || 'ThreatDragonModels';
+  const threatDragonModelsPattern = '.*.json';
+  const threatDragonModelsDir = path.join(config.flags.dir, modelsDir);
+  let models: string[] = [];
+  for (const ent of await fs.readdir(threatDragonModelsDir)) {
+    const subdir = path.join(threatDragonModelsDir, ent);
+    if ((await fs.stat(subdir)).isDirectory()) {
+      models = models.concat(await findFiles(subdir, threatDragonModelsPattern));
+    }
+  }
   return {
     project: {
-      name
+      name,
+      threatDragonModels: models
     }
   };
 }

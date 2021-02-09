@@ -13,7 +13,8 @@
       "depscanFindings" : {
         "ignoreSeverityList": "INFO, LOW",
         "ignoreUnfixable": true,
-        "missingValue": 10
+        "missingValue": 10,
+        "noVulnerabilitiesCredit": -5
       }
     },
     "scm": {
@@ -37,6 +38,14 @@
       "maintenanceFindings": {
         "daysLateRiskStep": 10,
         "daysLateRiskValuePerStep": 5
+      },
+      "threatModels": {
+        "enabled": true,
+        "highRiskValue": 10,
+        "mediumRiskValue": 5,
+        "lowRiskValue": 1,
+        "allMitigatedCredit": -3,
+        "missingValue": 5
       }
     }
   }

@@ -44,7 +44,7 @@ export async function gitRepoDirCheck(dir: string, config: Config = getConfig())
 
   if (await fs.pathExists(path.join(dir, '.git'))) {
     value = -5;
-    description = 'Repo found.';
+    description = 'Repo found. 🎉';
   } else {
     recommendations.push('Version code in a Git repository.');
   }
@@ -68,7 +68,7 @@ export async function gitConfigGPGCheck(cmdRunner: any = undefined, config: Conf
 
   if (!cmd.failed && cmd.stdout.includes('true')) {
     value = -1;
-    description = 'commit.gpgsign enabled.'
+    description = 'commit.gpgsign enabled. 🎉'
   } else {
     recommendations.push('Set commit.gpgsign to true for this repo.');
   }
@@ -93,7 +93,7 @@ export async function gpgVerifyRecentCommitsCheck(cmdRunner: any = undefined, co
 
   if (validHeadSha || validPrevSha) {
     value = -1;
-    description = 'One or more recent signed commits found.'
+    description = 'One or more recent signed commits found. 🎉'
   } else {
     recommendations.push('Sign your commits with a verified GPG key.');
   }

@@ -38,6 +38,7 @@ export interface CodeFacts {
 export interface ProjectFacts {
   project: {
     name: MaybeString;
+    threatDragonModels: MaybeString[];
   }
 }
 
@@ -54,6 +55,7 @@ export interface Config {
     j1AuthToken: MaybeString;
     j1Account: MaybeString;
     logLevel: string;
+    threatDragonDir: MaybeString;
   };
   flags: Flags;
   facts: Facts;
@@ -94,6 +96,7 @@ export interface CodeValues {
       ignoreSeverityList: string;
       ignoreUnfixable: boolean;
       missingValue: number;
+      noVulnerabilitiesCredit: number;
     }
   }
 }
@@ -106,6 +109,13 @@ export interface ProjectValues {
     maintenanceFindings: {
       daysLateRiskStep: number;
       daysLateRiskValuePerStep: number;
+    },
+    threatModels: {
+      enabled: boolean;
+      highRiskValue: number;
+      mediumRiskValue: number;
+      lowRiskValue: number;
+      allMitigatedCredit: number;
     }
   }
 }

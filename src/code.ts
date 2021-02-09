@@ -168,7 +168,8 @@ export async function depScanCheck(findings: DepScanFinding[], config: Config = 
     }
   }
   if (!validFindingCounts.length) {
-    validFindingCounts.push('None');
+    validFindingCounts.push('None 🎉');
+    value += config.values.checks.code.depscanFindings.noVulnerabilitiesCredit;
   } else {
     recommendations.push('Upgrade vulnerable packages.');
   }
