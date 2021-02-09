@@ -29,9 +29,28 @@ USAGE
 ```
 <!-- usagestop -->
 
+## Risk Scores
+
+The Risk scores that `peril` produces are arbitrary. A more structured
+calculation--the
+[DREAD](https://en.wikipedia.org/wiki/DREAD_%28risk_assessment_model%29)
+model--was considered but abandoned since that model lacks academic rigor and
+is difficult to apply in a consistent fashion that produces sensible results.
+Instead, `peril` takes the position that since risk evaluation will always be
+subjective, the values it uses should be inherently arbitrary and easily
+configured for tuning purposes (see below). It is recommended to run `peril`
+with the `--accept` flag for some time to gather scoring metrics that assist
+with tuning.
+
+While the scores are arbitrary, they are not meaningless: they do correlate
+tightly with the configured checks/practices.
+
 ## Configuration
 
-`peril` ships with default risk values out-of-the-box, but these are all configurable. You may override any of the values found in the `defaultConfig.json` file in the root of the project, and specify a path to your local config.json override with the `-c` flag, e.g.:
+`peril` ships with default risk values out-of-the-box, but these are all
+configurable. You may override any of the values found in the
+`defaultConfig.json` file in the root of the project, and specify a path to
+your local config.json override with the `-c` flag, e.g.:
 
 ```shell
 peril -c ./path/to/my/config.json
