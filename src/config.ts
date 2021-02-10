@@ -1,5 +1,6 @@
 import * as configReader from '@jupiterone/platform-sdk-config-reader';
 import { Config, Facts } from './types';
+import { runCmd, log } from './helpers';
 import * as scm from './scm';
 import * as code from './code';
 import * as jupiterone  from './jupiterone';
@@ -7,6 +8,8 @@ import * as project from './project';
 import * as fs from 'fs-extra';
 import path from 'path';
 import _ from 'lodash';
+
+const executable = require('executable');
 
 type KnownEnvironmentVariables = {
   J1_API_TOKEN: string;
@@ -49,11 +52,19 @@ export async function initConfig(flags: object) {
 
 export async function gatherOptionalConfig(config: Config = getConfig(), readFile: typeof fs.readFile = fs.readFile): Promise<Partial<Config>> {
   let optConfig: Partial<Config>;
-  try {
-    // const stat = await fs.stat(config.flags.config);
+  if (!config.flags.config) {
+    return {};
+  }
 
-    optConfig = JSON.parse(await readFile(config.flags.config, 'utf8'));
+  try {
+    if (await executable(config.flags.config)) {
+      const output = await runCmd(config.flags.config);
+      optConfig = JSON.parse(output.stdout);
+    } else {
+      optConfig = JSON.parse(await readFile(config.flags.config, 'utf8'));
+    }
   } catch (e) {
+    log('error gathering optional config: ' + e, 'DEBUG');
     return {};
   }
   return optConfig;

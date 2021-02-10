@@ -1,4 +1,3 @@
-import Peril from '~/src';
 import { Config } from '../../src/types';
 
 export const config: Config = {
@@ -12,7 +11,9 @@ export const config: Config = {
     verbose: true,
     dir: '/Users/test/repos/jupiterone/peril/reports',
     mergeRef: 'master',
-    config: '/Users/test/repos/jupiterone/peril/testConfig.json'
+    config: '/Users/test/repos/jupiterone/peril/testConfig.json',
+    debug: false,
+    accept: false
   },
   facts: {
     scm: {

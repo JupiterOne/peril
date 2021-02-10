@@ -1,5 +1,6 @@
 import { gatherOptionalConfig, getConfig, initConfig } from './config';
 import { config } from '../test/fixtures/testConfig';
+import { cloneDeep } from 'lodash';
 
 jest.mock('./scm');
 
@@ -13,12 +14,27 @@ describe('config', () => {
     expect(getConfig().facts).toBeTruthy();
   });
 
-  it('gatherOptionalConfigValues returns parsed JSON from fs', async () => {
+  it('gatherOptionalConfig returns parsed JSON from fs', async () => {
     const optional = {
-      key1: 'val1',
-      key2: 'val2'
+      facts: {
+        key1: 'val1',
+        key2: 'val2'
+      }
     };
-    const values = await gatherOptionalConfig(config, jest.fn().mockReturnValueOnce(JSON.stringify(optional)));
-    expect(values).toEqual(optional);
+    const cfg = cloneDeep(config);
+    cfg.flags.config = __dirname + '/../defaultConfig.json';
+    const optconfig = await gatherOptionalConfig(cfg, jest.fn().mockReturnValueOnce(JSON.stringify(optional)));
+    expect((optconfig.facts as any).key1).toEqual(optional.facts.key1);
+    expect((optconfig.facts as any).key2).toEqual(optional.facts.key2);
+    // JSON parsing errors will return empty object
+    expect(await gatherOptionalConfig(cfg, jest.fn().mockReturnValueOnce(''))).toEqual({});
+  });
+
+  it('gatherOptionalConfig returns parsed JSON from executable', async () => {
+    const cfg = cloneDeep(config);
+    // executable script provides custom 'test' fact
+    cfg.flags.config = __dirname + '/../test/fixtures/testConfig.sh';
+    const optconfig = await gatherOptionalConfig(cfg);
+    expect((optconfig.facts as any).test).toEqual(true)
   });
 });
