@@ -1,4 +1,4 @@
-import { gatherOptionalConfigValues, getConfig, initConfig } from './config';
+import { gatherOptionalConfig, getConfig, initConfig } from './config';
 import { config } from '../test/fixtures/testConfig';
 
 jest.mock('./scm');
@@ -18,7 +18,7 @@ describe('config', () => {
       key1: 'val1',
       key2: 'val2'
     };
-    const values = await gatherOptionalConfigValues(config, jest.fn().mockReturnValueOnce(JSON.stringify(optional)));
+    const values = await gatherOptionalConfig(config, jest.fn().mockReturnValueOnce(JSON.stringify(optional)));
     expect(values).toEqual(optional);
   });
 });

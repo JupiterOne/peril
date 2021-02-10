@@ -34,27 +34,29 @@ async function gatherAllFacts(): Promise<Facts> {
   return facts as Facts;
 }
 
-const config: any = {
+let config: any = {
   env: envConfig,
 }
 
 export async function initConfig(flags: object) {
   config.flags = flags;
   config.facts = await gatherAllFacts();
-  const defaultConfigValues: Config['values'] = JSON.parse(await fs.readFile(path.join(__dirname, '../defaultConfig.json'), 'utf8'));
-  const optionalConfigValues = await gatherOptionalConfigValues();
-  // deep merge optional override config into default values
-  config.values = _.merge(defaultConfigValues, optionalConfigValues);
+  config.values = JSON.parse(await fs.readFile(path.join(__dirname, '../defaultConfig.json'), 'utf8'));
+  const optionalConfig = await gatherOptionalConfig();
+  // deep merge optional override config into default config
+  config = _.merge(config, optionalConfig);
 }
 
-export async function gatherOptionalConfigValues(config: Config = getConfig(), readFile: typeof fs.readFile = fs.readFile): Promise<Config['values'] | {}> {
-  let configValues: Config['values'];
+export async function gatherOptionalConfig(config: Config = getConfig(), readFile: typeof fs.readFile = fs.readFile): Promise<Partial<Config>> {
+  let optConfig: Partial<Config>;
   try {
-    configValues = JSON.parse(await readFile(config.flags.config, 'utf8'));
+    // const stat = await fs.stat(config.flags.config);
+
+    optConfig = JSON.parse(await readFile(config.flags.config, 'utf8'));
   } catch (e) {
     return {};
   }
-  return configValues;
+  return optConfig;
 }
 
 export function getConfig(): Config {
