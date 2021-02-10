@@ -15,35 +15,6 @@
         "diagramJson": {
           "cells": [
             {
-              "type": "tm.Actor",
-              "size": {
-                "width": 160,
-                "height": 80
-              },
-              "position": {
-                "x": 60,
-                "y": 146
-              },
-              "angle": 0,
-              "id": "e510f12d-c662-4888-aeb7-b0ae9360925d",
-              "z": 1,
-              "hasOpenThreats": false,
-              "description": "Invoker of peril CLI",
-              "outOfScope": true,
-              "reasonOutOfScope": "CI/CD security is handled CSP, or Vendor and ultimately responsibility of Peril user.",
-              "attrs": {
-                ".element-shape": {
-                  "class": "element-shape hasNoOpenThreats isOutOfScope"
-                },
-                "text": {
-                  "text": "CI/CD System"
-                },
-                ".element-text": {
-                  "class": "element-text hasNoOpenThreats isInScope"
-                }
-              }
-            },
-            {
               "type": "tm.Process",
               "size": {
                 "width": 100,
@@ -81,24 +52,6 @@
                   "class": "element-text hasNoOpenThreats isInScope"
                 }
               }
-            },
-            {
-              "type": "tm.Boundary",
-              "size": {
-                "width": 10,
-                "height": 10
-              },
-              "smooth": true,
-              "source": {
-                "id": "a3c364ed-1f01-4eae-a7d3-7e27e23ea8bb"
-              },
-              "target": {
-                "id": "e510f12d-c662-4888-aeb7-b0ae9360925d"
-              },
-              "vertices": [],
-              "id": "d2025ef6-9be7-4b5d-9141-4d2f0914fb23",
-              "z": 3,
-              "attrs": {}
             },
             {
               "type": "tm.Store",
@@ -165,8 +118,8 @@
                 "height": 80
               },
               "position": {
-                "x": 284,
-                "y": 362
+                "x": 296,
+                "y": 363
               },
               "angle": 0,
               "id": "63192e3a-651c-442a-aab6-d28cc61f594f",
@@ -211,7 +164,7 @@
               },
               "position": {
                 "x": 42,
-                "y": 356
+                "y": 362
               },
               "angle": 0,
               "id": "18283224-9822-4cda-880e-4af596b92e07",
@@ -366,7 +319,7 @@
               "angle": 0,
               "id": "29f0a17a-649e-4259-86d4-3c24fcfdde13",
               "z": 3,
-              "hasOpenThreats": true,
+              "hasOpenThreats": false,
               "threats": [
                 {
                   "ruleId": "4adaa48a-0345-4533-a189-64c98c4420dd",
@@ -382,21 +335,22 @@
                   "ruleId": "edb05d76-a695-455f-947b-7d67b78bc31d",
                   "title": "Malicious JSON DoS threat",
                   "type": "Denial of service",
-                  "status": "Open",
+                  "status": "Mitigated",
                   "severity": "Low",
                   "description": "It is possible for malicous repo committers to commit very large JSON files that cause the parser to behave poorly.",
-                  "$$hashKey": "object:676"
+                  "$$hashKey": "object:676",
+                  "mitigation": "Accept. This would be self-sabotage."
                 }
               ],
               "attrs": {
                 ".element-shape": {
-                  "class": "element-shape hasOpenThreats isInScope"
+                  "class": "element-shape hasNoOpenThreats isInScope"
                 },
                 "text": {
                   "text": "local FS"
                 },
                 ".element-text": {
-                  "class": "element-text hasOpenThreats isInScope"
+                  "class": "element-text hasNoOpenThreats isInScope"
                 }
               }
             },
@@ -424,7 +378,7 @@
                   "status": "Open",
                   "severity": "Medium",
                   "description": "It is possible for users of the J1 system to tamper with graph data in an attempt to modify Peril risk results.",
-                  "$$hashKey": "object:685"
+                  "$$hashKey": "object:89"
                 },
                 {
                   "ruleId": "edb05d76-a695-455f-947b-7d67b78bc31d",
@@ -434,7 +388,7 @@
                   "severity": "Low",
                   "description": "If JupiterOne is behaving poorly, or down, this could cause peril to block, effectively DoSing CI.",
                   "mitigation": "Retry logic in code has sensible timeouts.",
-                  "$$hashKey": "object:708"
+                  "$$hashKey": "object:95"
                 }
               ],
               "attrs": {
