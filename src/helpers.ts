@@ -83,16 +83,16 @@ export function formatRisk(risk: Risk, category: string, check: string): Risk {
 
 const logLines: string[] = [];
 
-export function log(msg: any, level: LogLevel = 'INFO', config: Config = getConfig()): void {
+export function log(msg: any, level: LogLevel = 'INFO', config: Config = getConfig(), consoleObj = console): void {
   const logMsg = new Date() + ': ' + String(msg);
   if (level === 'DEBUG'){
     if (config.flags.debug) {
-      console.debug(msg);
+      consoleObj.debug(msg);
     }
     logLines.push(logMsg);
     return;
   }
-  console[level.toLowerCase() as keyof LogLevelValues](msg);
+  consoleObj[level.toLowerCase() as keyof LogLevelValues](msg);
   logLines.push(logMsg);
 }
 
