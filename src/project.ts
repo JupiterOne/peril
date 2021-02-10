@@ -1,5 +1,5 @@
 import { RiskCategory, Risk, Config, SnykFinding, DeferredMaintenanceFinding, SortedFindings, ProjectFacts } from './types';
-import { formatRisk, calculateRiskSubtotal, findFiles } from './helpers';
+import { log, formatRisk, calculateRiskSubtotal, findFiles } from './helpers';
 import { getConfig } from './config';
 import { get } from 'lodash';
 import fs from 'fs-extra';
@@ -19,7 +19,7 @@ export async function gatherProjectRisk(config: Config = getConfig()): Promise<R
     checks.push(codeRepoSnykFindingsCheck(snykFindings));
     checks.push(codeRepoMaintenanceFindingsCheck(maintenanceFindings));
     if (unknownFindings.length) {
-      console.warn(`WARNING: ${projectName} CodeRepo has ${unknownFindings.length} Findings of unknown type. These do not currently contribute to risk scoring, but should be addressed.`);
+      log(`WARNING: ${projectName} CodeRepo has ${unknownFindings.length} Findings of unknown type. These do not currently contribute to risk scoring, but should be addressed.`, 'WARN');
     }
   }
   checks.push(threatModelCheck());
@@ -192,7 +192,7 @@ export async function threatModelCheck(
       }
     }
   } catch(e) {
-    console.warn('Could not parse one or more threatModel files: ' + e);
+    log('Could not parse one or more threatModel files: ' + e, 'WARN');
   }
 
   if (openThreats.length) {

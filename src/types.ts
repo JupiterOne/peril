@@ -126,6 +126,8 @@ export interface Flags {
   dir: string;
   mergeRef: string;
   config: string;
+  debug: boolean;
+  accept: boolean;
 }
 
 export interface ShortStat {
@@ -195,4 +197,13 @@ export interface GitleaksMetrics {
   high: number;
   medium: number;
   low: number;
+}
+
+export type LogLevel = 'INFO' | 'WARN' | 'ERROR' | 'DEBUG'
+
+export interface LogLevelValues {
+  info: string;
+  warn: string;
+  error: string;
+  debug: string;
 }

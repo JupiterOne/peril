@@ -84,6 +84,4 @@ describe('project risks', () => {
     const risk = await threatModelCheck(cfg);
     expect(risk.value).toEqual(cfg.values.checks.project.threatModels.allMitigatedCredit);
   });
-
-
 });

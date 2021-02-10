@@ -5,6 +5,8 @@ import { gatherLocalSCMRisk } from './scm';
 import { gatherCodeRisk } from './code';
 import { gatherProjectRisk } from './project';
 import { RiskCategory } from './types';
+import { log, getLogOutput } from './helpers';
+import fs from 'fs-extra';
 
 class Peril extends Command {
   static description = 'JupiterOne Project Risk-Analysis and Reporting Tool'
@@ -16,6 +18,7 @@ class Peril extends Command {
     dir: flags.string({char: 'd', description: 'directory path to scan', default: process.cwd()}),
     mergeRef: flags.string({char: 'm', description: 'current git ref/tag of default branch (merge target)', default: 'master'}),
     config: flags.string({char: 'c', description: 'path to override config file'}),
+    log: flags.string({char: 'l', description: 'path to output log file'}),
     verbose: flags.boolean({char: 'v', description: 'enable verbose output'}),
     accept: flags.boolean({description: 'accept all risk (do not exit with non-zero status)'})
   }
@@ -24,13 +27,11 @@ class Peril extends Command {
     const {flags} = this.parse(Peril)
     await initConfig(flags);
 
-    if (flags.debug) {
-      console.log(JSON.stringify(redactConfig(getConfig()), null, 2));
-    }
+    log(JSON.stringify(redactConfig(getConfig()), null, 2), 'DEBUG');
 
     const riskCategories: RiskCategory[] = [];
 
-    console.log('Analyzing risk factors...');
+    log('Analyzing risk factors...');
 
     riskCategories.push(await gatherLocalSCMRisk());
     riskCategories.push(await gatherCodeRisk());
@@ -45,18 +46,23 @@ class Peril extends Command {
     const config = getConfig();
     const tolerance = config.values.riskTolerance;
     const business = config.env.j1Account ? config.env.j1Account : 'the business';
+    let exitCode = 0;
+
     if (riskTotal > tolerance) {
-      console.log(`\nFinal score is ${(riskTotal - tolerance).toFixed(2)} points over the limit configured by ${business} (${tolerance}).`);
+      log(`\nFinal score is ${(riskTotal - tolerance).toFixed(2)} points over the limit configured by ${business} (${tolerance}).`);
       if (flags.accept) {
-        console.log(`🚧 The risk associated with these changes has been force-approved by ${business}.`);
+        log(`🚧 The risk associated with these changes has been force-approved by ${business}.`);
       } else {
-        console.log('❌ These changes are too risky! Please attend to the recommendations above to lower the overall risk.');
-        process.exit(1);
+        log('❌ These changes are too risky! Please attend to the recommendations above to lower the overall risk.');
+        exitCode = 1;
       }
     } else {
-      console.log(`\n✅ The risk associated with these changes is accepted by ${business}.`);
+      log(`\n✅ The risk associated with these changes is accepted by ${business}.`);
     }
-    process.exit(0);
+    if (flags.log) {
+      await writeLogFile(flags.log);
+    }
+    process.exit(exitCode);
   }
 }
 
@@ -65,20 +71,20 @@ function displayOutput(riskCategories: RiskCategory[], riskTotal: number, flags:
 
   riskCategories.forEach(riskCategory => {
     if (flags.verbose) {
-      console.log(`\n${riskCategory.title}:`);
+      log(`\n${riskCategory.title}:`);
       riskCategory.risks.forEach(risk => {
-        console.log(risk.description);
+        log(risk.description);
       });
     }
-    console.log(`${riskCategory.title}: ${riskCategory.scoreSubtotal.toFixed(2)}`);
+    log(`${riskCategory.title}: ${riskCategory.scoreSubtotal.toFixed(2)}`);
   });
-  console.log('-----------------')
-  console.log('Total Score: ' + riskTotal.toFixed(2));
+  log('-----------------')
+  log('Total Score: ' + riskTotal.toFixed(2));
 
   if (recommendations.length) {
-    console.log('\nRecommended actions to reduce risk:');
+    log('\nRecommended actions to reduce risk:');
     recommendations.forEach(recommendation => {
-      console.log('* ' + recommendation);
+      log('* ' + recommendation);
     });
   }
 }
@@ -93,6 +99,10 @@ function extractRecommendations(categories: RiskCategory[]): string[] {
     });
   });
   return Array.from(recommendationsSet);
+}
+
+async function writeLogFile(logFile: string): Promise<void> {
+  return fs.writeFile(logFile, getLogOutput());
 }
 
 export = Peril

@@ -1,5 +1,5 @@
 import { Risk, RiskCategory, ShortStat, CodeFacts, MaybeString, DepScanFinding, Config } from './types';
-import { calculateRiskSubtotal, findFiles, runCmd, formatRisk } from './helpers';
+import { log, calculateRiskSubtotal, findFiles, runCmd, formatRisk } from './helpers';
 import { getConfig } from './config';
 import path from 'path';
 import * as fs from 'fs-extra';
@@ -19,7 +19,7 @@ export async function gatherCodeRisk(): Promise<RiskCategory> {
     checks.push(locCheck(gitStats));
     checks.push(filesChangedCheck(gitStats));
   } else {
-    config.flags.verbose && console.error(`Couldn't retrieve git stats for HEAD..${config.flags.mergeRef}, skipping some checks.`);
+    config.flags.verbose && log(`Couldn't retrieve git stats for HEAD..${config.flags.mergeRef}, skipping some checks.`, 'WARN');
   }
   checks.push(depScanCheck(await parseShiftLeftDepScan(config.facts.code.scans.depScanReport)));
 

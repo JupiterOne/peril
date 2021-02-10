@@ -2,6 +2,7 @@ import { JupiterOneClient } from '@jupiterone/jupiterone-client-nodejs';
 import { retry, AttemptOptions } from '@lifeomic/attempt';
 import { getConfig } from './config';
 import { Config, JupiterOneFacts } from './types';
+import { log } from './helpers';
 import axios, { AxiosInstance, AxiosResponse } from 'axios';
 import { get } from 'lodash';
 
@@ -61,7 +62,7 @@ export class J1Client {
         return this.j1Client.queryV1(j1ql);
       }, this.attemptOptions);
     } catch (e) {
-      console.warn('Failed to gather entities for query: ' + j1ql + ' : ' + e);
+      log('Failed to gather entities for query: ' + j1ql + ' : ' + e, 'WARN');
     }
     return res;
   }
@@ -80,7 +81,7 @@ export class J1Client {
       }, this.attemptOptions);
       url = get((res as AxiosResponse).data, 'data.url', '');
     } catch (e) {
-      console.warn('Failed to retrieve deep-link for J1 query URL.' + e);
+      log('Failed to retrieve deep-link for J1 query URL.' + e, 'WARN');
     }
     return url;
   }

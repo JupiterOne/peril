@@ -1,4 +1,4 @@
-import { Risk, Config } from './types';
+import { Risk, Config, LogLevel, LogLevelValues } from './types';
 import { getConfig } from './config';
 import path from 'path';
 import execa from 'execa';
@@ -79,4 +79,23 @@ export function formatRisk(risk: Risk, category: string, check: string): Risk {
   const modifier = newRisk.value >= 0 ? '+' : '';
   newRisk.description = category.toUpperCase() + ' - ' + check + ': ' + risk.description + ` ${modifier}${newRisk.value.toFixed(2)}`;
   return newRisk;
+}
+
+const logLines: string[] = [];
+
+export function log(msg: any, level: LogLevel = 'INFO', config: Config = getConfig()): void {
+  const logMsg = new Date() + ': ' + String(msg);
+  if (level === 'DEBUG'){
+    if (config.flags.debug) {
+      console.debug(msg);
+    }
+    logLines.push(logMsg);
+    return;
+  }
+  console[level.toLowerCase() as keyof LogLevelValues](msg);
+  logLines.push(logMsg);
+}
+
+export function getLogOutput(): string {
+  return logLines.join('\n');
 }
