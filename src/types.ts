@@ -1,4 +1,4 @@
-import {J1Client} from './jupiterone';
+import { J1Client } from './jupiterone';
 export interface Risk {
   check: string;
   value: number;

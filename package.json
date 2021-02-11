@@ -12,14 +12,11 @@
     "postbuild": "cp -R bin dist/",
     "posttest": "yarn lint",
     "lint": "eslint --ext .ts,.tsx,.js,.jsx .",
-    "test": "jest",
-    "fulltest": "yarn build && yarn test"
+    "test": "jest"
   },
   "dependencies": {
     "@jupiterone/data-model": "^0.16.3",
     "@jupiterone/jupiterone-client-nodejs": "^0.23.0",
-    "@jupiterone/platform-sdk-config-reader": "^2.0.4",
-    "@jupiterone/platform-sdk-logging": "^2.0.8",
     "@lifeomic/attempt": "^3.0.0",
     "@oclif/command": "^1",
     "@oclif/config": "^1",
@@ -39,8 +36,6 @@
     "uuid": "^8.3.2"
   },
   "devDependencies": {
-    "@jupiterone/dev-tools": "^7.1.0",
-    "@jupiterone/platform-sdk-framework-dev": "^1.0.3",
     "@jupiterone/typescript-tools": "^13.0.2",
     "@oclif/dev-cli": "^1",
     "@types/faker": "^5.1.5",

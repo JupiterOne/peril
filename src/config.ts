@@ -1,4 +1,3 @@
-import * as configReader from '@jupiterone/platform-sdk-config-reader';
 import { Config, Facts } from './types';
 import { runCmd, log } from './helpers';
 import * as scm from './scm';
@@ -20,12 +19,12 @@ type KnownEnvironmentVariables = {
 
 const processEnv = process.env as KnownEnvironmentVariables;
 
-export const envConfig = configReader.readConfigFromEnv(processEnv, {
-  j1AuthToken: (env) => configReader.readStringFromEnv(env, 'J1_API_TOKEN'),
-  j1Account: (env) => configReader.readStringFromEnv(env, 'J1_ACCOUNT'),
-  logLevel: (env) => configReader.readStringFromEnv(env, 'LOG_LEVEL', 'info'),
-  threatDragonDir: (env) => configReader.readStringFromEnv(env, 'THREAT_DRAGON_DIR')
-});
+export const envConfig = {
+  j1AuthToken: _.get(processEnv, 'J1_API_TOKEN'),
+  j1Account: _.get(processEnv, 'J1_ACCOUNT'),
+  logLevel: _.get(processEnv, 'LOG_LEVEL', 'info'),
+  threatDragonDir: _.get(processEnv, 'THREAT_DRAGON_DIR')
+};
 
 async function gatherAllFacts(): Promise<Facts> {
   return {
