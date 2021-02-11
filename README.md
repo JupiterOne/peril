@@ -20,15 +20,30 @@ Use-cases include:
 
 ```sh-session
 $ npm install -g @jupiterone/peril
-$ peril COMMAND
-running command...
-$ peril (-v|--version|version)
-@jupiterone/peril/0.0.1 darwin-x64 node-v12.18.3
-$ peril --help [COMMAND]
+$ peril --help
+JupiterOne Project Risk-Analysis and Reporting Tool
+
 USAGE
-  $ peril COMMAND
-...
+  $ peril
+
+OPTIONS
+  -V, --version            show CLI version
+  -c, --config=config      path to override config file
+  -d, --dir=dir            [default: /Users/erichs/repos/jupiterone/peril] directory path to scan
+  -h, --help               show CLI help
+  -l, --log=log            path to output log file
+  -m, --mergeRef=mergeRef  [default: master] current git ref/tag of default branch (merge target)
+  -v, --verbose            enable verbose output
+  --accept                 accept all risk (do not exit with non-zero status)
+  --debug                  debug mode, very verbose
 ```
+
+## Assumptions
+
+`peril` assumes that:
+
+* You are using `git`.
+* The present working directory is the top-level of the git project to be analyzed, or the `--dir` flag points to this top-level.
 
 ## Risk Scores
 
@@ -66,7 +81,7 @@ specified with the `--config` flag. An example script may be found at
 `./test/fixtures/testConfig.sh`. Please ensure that the permissions to this
 script or program are locked down prior to invoking with `peril --config`!
 
-## Checks Performed
+## Supported Checks
 
 ### SCM
 

@@ -27,6 +27,7 @@ class Peril extends Command {
     const {flags} = this.parse(Peril)
     await initConfig(flags);
 
+    log('peril invoked with: peril ' + process.argv.slice(2).join(' '));
     log(JSON.stringify(redactConfig(getConfig()), null, 2), 'DEBUG');
 
     const riskCategories: RiskCategory[] = [];
@@ -60,7 +61,8 @@ class Peril extends Command {
       log(`\n✅ The risk associated with these changes is accepted by ${business}.`);
     }
     if (flags.log) {
-      await writeLogFile(flags.log);
+      await writeLogFile(String(flags.log));
+      console.log('output logged to: ' + flags.log);
     }
     process.exit(exitCode);
   }
