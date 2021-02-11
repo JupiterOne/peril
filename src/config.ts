@@ -28,13 +28,12 @@ export const envConfig = configReader.readConfigFromEnv(processEnv, {
 });
 
 async function gatherAllFacts(): Promise<Facts> {
-  const facts: any = {
+  return {
     ...await scm.gatherFacts(),
     ...await code.gatherFacts(),
     ...await jupiterone.gatherFacts(),
     ...await project.gatherFacts()
   };
-  return facts as Facts;
 }
 
 let config: any = {

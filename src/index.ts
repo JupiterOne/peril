@@ -9,18 +9,18 @@ import { log, getLogOutput } from './helpers';
 import fs from 'fs-extra';
 
 class Peril extends Command {
-  static description = 'JupiterOne Project Risk-Analysis and Reporting Tool'
+  static description = 'Project Risk-Analysis and Reporting Tool'
 
   static flags = {
-    version: flags.version({char: 'V'}),
-    help: flags.help({char: 'h'}),
-    debug: flags.boolean({description: 'debug mode, very verbose'}),
-    dir: flags.string({char: 'd', description: 'directory path to scan', default: process.cwd()}),
-    mergeRef: flags.string({char: 'm', description: 'current git ref/tag of default branch (merge target)', default: 'master'}),
-    config: flags.string({char: 'c', description: 'path to override config file'}),
-    log: flags.string({char: 'l', description: 'path to output log file'}),
-    verbose: flags.boolean({char: 'v', description: 'enable verbose output'}),
-    accept: flags.boolean({description: 'accept all risk (do not exit with non-zero status)'})
+    version: flags.version({char: 'V', description: 'Show CLI version'}),
+    help: flags.help({char: 'h', description: 'Show CLI help'}),
+    debug: flags.boolean({description: 'Debug mode, very verbose'}),
+    dir: flags.string({char: 'd', description: 'Directory path to scan', default: process.cwd()}),
+    mergeRef: flags.string({char: 'm', description: 'Current git ref/tag of default branch (merge target)', default: 'master'}),
+    config: flags.string({char: 'c', description: 'Path to override config file'}),
+    log: flags.string({char: 'l', description: 'Path to output log file'}),
+    verbose: flags.boolean({char: 'v', description: 'Enable verbose output'}),
+    accept: flags.boolean({description: 'Accept all risk (do not exit with non-zero status)'})
   }
 
   async run() {
@@ -62,7 +62,7 @@ class Peril extends Command {
     }
     if (flags.log) {
       await writeLogFile(String(flags.log));
-      console.log('output logged to: ' + flags.log);
+      console.log('Output logged to: ' + flags.log);
     }
     process.exit(exitCode);
   }

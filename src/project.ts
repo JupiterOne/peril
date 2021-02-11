@@ -146,7 +146,7 @@ export async function threatModelCheck(
   }
 
   if (!config.facts.project.threatDragonModels.length) {
-    recommendations.push(`Perform threat analysis with OWASP ThreatDragon, and commit the JSON output to the '${config.facts.project.threatDragonModelsDir}' folder`);
+    recommendations.push(`Perform threat analysis with OWASP ThreatDragon, and commit the JSON output to the '${config.facts.project.threatDragonModelsDir}' folder.`);
     return formatRisk({
       check,
       description: 'No ThreatDragon models found.',

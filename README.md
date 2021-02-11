@@ -3,7 +3,7 @@
 ![GitHub](https://img.shields.io/github/license/jupiterone/peril)
 ![Snyk Vulnerabilities for npm package version](https://img.shields.io/snyk/vulnerabilities/npm/@jupiterone/peril)
 
-JupiterOne Project Risk Analysis and Reporting Tool
+Project Risk Analysis and Reporting Tool
 
 This is a standalone CLI tool intended to analyze the overall risk profile
 for the currently-checked-out branch of a code repository. It will draw risk
