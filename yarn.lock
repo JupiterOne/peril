@@ -1241,10 +1241,10 @@
   resolved "https://registry.yarnpkg.com/@jupiterone/npm-enforce-age/-/npm-enforce-age-1.0.0.tgz#3e8c1266e3e6eb3a3f42454a3c7fd6f816e86703"
   integrity sha512-lzgh2k77SbTZPNRwCejPj0l0OTWcgotZlcMjObRJB3EKkBhoEwJU6dPAAau7K72ruQBqWNUgdyoeqKcBSFY5+Q==
 
-"@jupiterone/platform-sdk-config-reader@^1.0.3":
-  version "1.0.3"
-  resolved "https://registry.yarnpkg.com/@jupiterone/platform-sdk-config-reader/-/platform-sdk-config-reader-1.0.3.tgz#25ed1ce7f5647e10c58c28fe8a085530bc70bb63"
-  integrity sha512-Y2uLl7ofObG8UJ2rWRRC3phOMd/iW9ORCjuXwdb6umagmsd8eXawfOILT5s40s/QA+olndBnR0jdo8Yov41k4w==
+"@jupiterone/platform-sdk-config-reader@^2.0.4":
+  version "2.0.4"
+  resolved "https://registry.yarnpkg.com/@jupiterone/platform-sdk-config-reader/-/platform-sdk-config-reader-2.0.4.tgz#a218e3e344181b6cc55e98f079a9b61a0d927842"
+  integrity sha512-LU6464W0ysDgxUN4jWqgkb7QG6ZpfQm+zi473aKnISxUGNSelPJJRXl942E2urBvWTCWOJjyd2M9hTAn01uPLg==
   dependencies:
     chalk "^4.1.0"
 
@@ -1252,6 +1252,14 @@
   version "1.0.3"
   resolved "https://registry.yarnpkg.com/@jupiterone/platform-sdk-errors/-/platform-sdk-errors-1.0.3.tgz#9d759c1a93c70515854a519d899ff5f13054d7fd"
   integrity sha512-V5mvDn1AjaDmi0tJuSdqr4peop0SxHbiNWfFHGGniq1YG2wtSbQ1cmsSskWinwtYOTLYifWqbNgqIPlsk5oiCw==
+  dependencies:
+    "@types/uuid" "^8.3.0"
+    uuid "^8.3.2"
+
+"@jupiterone/platform-sdk-errors@^2.0.7":
+  version "2.0.7"
+  resolved "https://registry.yarnpkg.com/@jupiterone/platform-sdk-errors/-/platform-sdk-errors-2.0.7.tgz#f4b86b839faf69ad596d0cd1a28d0ea404a833d1"
+  integrity sha512-8N8NIu72kV7j5bJ9S3kTr9kQVExe/6GAGOlFmzAMS+INaE1OMfU7mA5kjB7+5jf3mM5OOQT/UfamOfbFXRNvZQ==
   dependencies:
     "@types/uuid" "^8.3.0"
     uuid "^8.3.2"
@@ -1271,6 +1279,16 @@
   integrity sha512-0eDgZz5eYZMsBz6/4pH/vbn47j7ZvSUjQB9Iu9elnzXdax55y24StBkw29ZVcwIj5DtEv8aC+fnQiSAi0MkBIA==
   dependencies:
     "@jupiterone/platform-sdk-errors" "^1.0.3"
+    "@types/bunyan" "^1.8.6"
+    bunyan "^1.8.14"
+    bunyan-format "^0.2.1"
+
+"@jupiterone/platform-sdk-logging@^2.0.8":
+  version "2.0.8"
+  resolved "https://registry.yarnpkg.com/@jupiterone/platform-sdk-logging/-/platform-sdk-logging-2.0.8.tgz#3e57b4f260560f98e9b2d66ca6b618e4432e138b"
+  integrity sha512-qEVzpyihPAAwuNo5Dx7sFtjt9ARREPfWuyo/Fbf8yYDHQaAt7p4Km1SjUUlb34GGWfaUrTio3bg7ocybhWjMTQ==
+  dependencies:
+    "@jupiterone/platform-sdk-errors" "^2.0.7"
     "@types/bunyan" "^1.8.6"
     bunyan "^1.8.14"
     bunyan-format "^0.2.1"

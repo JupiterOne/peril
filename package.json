@@ -18,8 +18,8 @@
   "dependencies": {
     "@jupiterone/data-model": "^0.16.3",
     "@jupiterone/jupiterone-client-nodejs": "^0.23.0",
-    "@jupiterone/platform-sdk-config-reader": "^1.0.3",
-    "@jupiterone/platform-sdk-logging": "^1.0.3",
+    "@jupiterone/platform-sdk-config-reader": "^2.0.4",
+    "@jupiterone/platform-sdk-logging": "^2.0.8",
     "@lifeomic/attempt": "^3.0.0",
     "@oclif/command": "^1",
     "@oclif/config": "^1",
