@@ -1,0 +1,172 @@
+{
+  "summary": {
+    "title": "threat model",
+    "owner": "jupiterone",
+    "description": "sample threat model"
+  },
+  "detail": {
+    "contributors": [],
+    "diagrams": [
+      {
+        "title": "Workflow",
+        "thumbnail": "./public/content/images/thumbnail.jpg",
+        "id": 0,
+        "diagramJson": {
+          "cells": [
+            {
+              "type": "tm.Process",
+              "size": {
+                "width": 100,
+                "height": 100
+              },
+              "position": {
+                "x": 259,
+                "y": 51
+              },
+              "angle": 0,
+              "id": "dfb67707-3e20-4ea4-a497-2da2c33a0ff1",
+              "z": 1,
+              "hasOpenThreats": false,
+              "privilegeLevel": "root",
+              "attrs": {
+                ".element-shape": {
+                  "class": "element-shape hasNoOpenThreats isInScope"
+                },
+                "text": {
+                  "text": "Modify Values"
+                },
+                ".element-text": {
+                  "class": "element-text hasNoOpenThreats isInScope"
+                }
+              }
+            },
+            {
+              "type": "tm.Process",
+              "size": {
+                "width": 100,
+                "height": 100
+              },
+              "position": {
+                "x": 50,
+                "y": 51
+              },
+              "angle": 0,
+              "id": "87d120b2-4556-443e-a041-10a52859d362",
+              "z": 2,
+              "hasOpenThreats": false,
+              "outOfScope": true,
+              "reasonOutOfScope": "Does not modify anything on disk.",
+              "attrs": {
+                ".element-shape": {
+                  "class": "element-shape hasNoOpenThreats isOutOfScope"
+                },
+                "text": {
+                  "text": "List Values"
+                },
+                ".element-text": {
+                  "class": "element-text hasNoOpenThreats isInScope"
+                }
+              }
+            },
+            {
+              "type": "tm.Store",
+              "size": {
+                "width": 160,
+                "height": 80
+              },
+              "position": {
+                "x": 281,
+                "y": 348
+              },
+              "angle": 0,
+              "id": "4eec591b-7b81-4765-8953-a24509c502b6",
+              "z": 3,
+              "hasOpenThreats": false,
+              "threats": [
+                {
+                  "status": "Mitigated",
+                  "severity": "High",
+                  "title": "May modify active records",
+                  "type": "Denial of service",
+                  "description": "Deleting or modifying the currently active record is undesirable.",
+                  "mitigation": "Atomic locks."
+                }
+              ],
+              "attrs": {
+                ".element-shape": {
+                  "class": "element-shape hasNoOpenThreats isInScope"
+                },
+                "text": {
+                  "text": "/boot"
+                },
+                ".element-text": {
+                  "class": "element-text hasNoOpenThreats isInScope"
+                }
+              }
+            },
+            {
+              "type": "tm.Flow",
+              "smooth": true,
+              "source": {
+                "id": "dfb67707-3e20-4ea4-a497-2da2c33a0ff1"
+              },
+              "target": {
+                "id": "4eec591b-7b81-4765-8953-a24509c502b6"
+              },
+              "vertices": [],
+              "id": "3ba92d98-29ba-489e-8a96-9af8096ebebb",
+              "labels": [
+                {
+                  "position": {
+                    "distance": 0.3237392778405616,
+                    "offset": 43.05534435905329
+                  },
+                  "attrs": {
+                    "text": {
+                      "text": "delete",
+                      "font-weight": "400",
+                      "font-size": "small"
+                    }
+                  }
+                }
+              ],
+              "z": 4,
+              "hasOpenThreats": true,
+              "threats": [
+                {
+                  "ruleId": "4adaa48a-0345-4533-a189-64c98c4420dd",
+                  "title": "Generic tampering threat",
+                  "type": "Tampering",
+                  "status": "Open",
+                  "severity": "Medium",
+                  "description": "A generic tampering threat"
+                },
+                {
+                  "ruleId": "13000296-b17d-4b72-9cc4-f5cc33f80e4c",
+                  "title": "Generic information disclosure threat",
+                  "type": "Information disclosure",
+                  "status": "Open",
+                  "severity": "High",
+                  "description": "A generic information disclosure threat"
+                }
+              ],
+              "attrs": {
+                ".marker-target": {
+                  "class": "marker-target hasOpenThreats isInScope"
+                },
+                ".connection": {
+                  "class": "connection hasOpenThreats isInScope"
+                }
+              }
+            }
+          ]
+        },
+        "size": {
+          "height": 697.213134765625,
+          "width": 790
+        }
+      }
+    ],
+    "reviewer": "jupiterone"
+  }
+}

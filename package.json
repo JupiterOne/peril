@@ -1,21 +1,32 @@
 {
-  "name": "project-risk-analyzer",
-  "license": "UNLICENSED",
+  "name": "@jupiterone/peril",
+  "description": "Project Risk Analysis and Reporting Tool",
+  "version": "0.1.0",
+  "author": "JupiterOne <developer@jupiterone.com>",
+  "repository": "jupiterone/project-risk-analyzer",
+  "license": "MIT",
+  "main": "dist/index.js",
   "scripts": {
     "build": "yarn ttsc -p tsconfig-dist.json",
+    "prebuild": "yarn test && rm -rf dist",
+    "postbuild": "cp -R bin dist/",
+    "posttest": "yarn lint",
     "lint": "eslint --ext .ts,.tsx,.js,.jsx .",
-    "test": "jest",
-    "start": "NODE_OPTIONS='--max-old-space-size=4096' ts-node --compiler ttypescript ./src/migrateGraphData.ts",
-    "plan": "yarn build && jupiterone-manual-deploy --action plan -t jupiterone-infra",
-    "deploy": "yarn build && jupiterone-manual-deploy -t jupiterone-infra",
-    "deploy:dev": "yarn build && jupiterone-manual-deploy -t jupiterone-dev"
+    "test": "jest"
   },
   "dependencies": {
     "@jupiterone/data-model": "^0.16.3",
-    "@jupiterone/platform-sdk-config-reader": "^1.0.3",
-    "@jupiterone/platform-sdk-logging": "^1.0.3",
+    "@jupiterone/jupiterone-client-nodejs": "^0.23.0",
+    "@lifeomic/attempt": "^3.0.0",
+    "@oclif/command": "^1",
+    "@oclif/config": "^1",
+    "@oclif/plugin-help": "^3",
     "@types/fs-extra": "^9.0.6",
+    "@types/node": ">=14.14.7",
+    "axios": "^0.21.1",
     "escape-string-regexp": "^4.0.0",
+    "execa": "^5.0.0",
+    "executable": "^4.1.1",
     "faker": "^5.1.0",
     "fs-extra": "^9.1.0",
     "globby": "^11.0.1",
@@ -25,13 +36,24 @@
     "uuid": "^8.3.2"
   },
   "devDependencies": {
-    "@jupiterone/dev-tools": "^7.1.0",
-    "@jupiterone/platform-sdk-framework-dev": "^1.0.3",
     "@jupiterone/typescript-tools": "^13.0.2",
+    "@oclif/dev-cli": "^1",
     "@types/faker": "^5.1.5",
     "@types/lodash": "^4.14.165",
     "@types/rimraf": "^3.0.0",
     "@types/uuid": "^8.3.0",
     "ts-node": "^9.1.1"
-  }
+  },
+  "engines": {
+    "node": ">=8.0.0"
+  },
+  "files": [
+    "/bin",
+    "/dist",
+    "defaultConfig.json"
+  ],
+  "oclif": {
+    "bin": "peril"
+  },
+  "types": "dist/index.d.ts"
 }

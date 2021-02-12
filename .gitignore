@@ -1,4 +1,5 @@
 .data/
+reports/
 node_modules/
 graph-objects/
 .DS_Store
