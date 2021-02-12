@@ -6,6 +6,9 @@
   "repository": "jupiterone/project-risk-analyzer",
   "license": "MIT",
   "main": "dist/index.js",
+  "bin": {
+    "peril": "./bin/run"
+  },
   "scripts": {
     "build": "yarn ttsc -p tsconfig-dist.json",
     "prebuild": "yarn test && rm -rf dist",
