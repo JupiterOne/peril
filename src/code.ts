@@ -124,7 +124,12 @@ export async function filesChangedCheck(gitStats: ShortStat, config: Config = ge
 export async function depScanCheck(findings: DepScanFinding[], config: Config = getConfig()): Promise<Risk> {
   const check = 'depscanFindings';
   const recommendations: string[] = [];
-  const missingValue = config.values.checks.code.depscanFindings.missingValue;
+  const {
+    missingValue,
+    ignoreSeverityList,
+    ignoreUnfixable,
+    noVulnerabilitiesCredit
+  } = config.values.checks.code.depscanFindings;
 
   if (!findings.length) {
     return {
@@ -144,12 +149,6 @@ export async function depScanCheck(findings: DepScanFinding[], config: Config = 
     info: 0
   };
 
-  const {
-    missingValue
-    ignoreSeverityList,
-    ignoreUnfixable,
-    noVulnerabilitiesCredit
-  } = config.values.checks.code.depscanFindings;
   const ignoreSeverities = ignoreSeverityList.toLowerCase().split(',').map(i => i.trim());
 
   for (const finding of findings) {
@@ -173,7 +172,7 @@ export async function depScanCheck(findings: DepScanFinding[], config: Config = 
   }
   if (!validFindingCounts.length) {
     validFindingCounts.push('None 🎉');
-    value += config.values.checks.code.depscanFindings.noVulnerabilitiesCredit;
+    value += noVulnerabilitiesCredit;
   } else {
     recommendations.push('Upgrade vulnerable packages.');
   }
