@@ -1,11 +1,14 @@
 {
   "name": "@jupiterone/peril",
   "description": "Project Risk Analysis and Reporting Tool",
-  "version": "0.1.0",
+  "version": "0.1.2",
   "author": "JupiterOne <developer@jupiterone.com>",
   "repository": "jupiterone/project-risk-analyzer",
   "license": "MIT",
   "main": "dist/index.js",
+  "bin": {
+    "peril": "./bin/run"
+  },
   "scripts": {
     "build": "yarn ttsc -p tsconfig-dist.json",
     "prebuild": "yarn test && rm -rf dist",
