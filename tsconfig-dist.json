@@ -4,6 +4,7 @@
     "outDir": "./dist"
   },
   "files": [
+    "package.json",
     "defaultConfig.json"
   ],
   "include": [

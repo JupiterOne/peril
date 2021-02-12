@@ -9,7 +9,7 @@
   "scripts": {
     "build": "yarn ttsc -p tsconfig-dist.json",
     "prebuild": "yarn test && rm -rf dist",
-    "postbuild": "cp -R bin dist/",
+    "postbuild": "cp -R bin LICENSE dist/",
     "posttest": "yarn lint",
     "lint": "eslint --ext .ts,.tsx,.js,.jsx .",
     "test": "jest"

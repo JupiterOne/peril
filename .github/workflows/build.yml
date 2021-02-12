@@ -68,4 +68,5 @@ jobs:
         run: |
           echo "//registry.npmjs.org/:_authToken=${NPM_AUTH_TOKEN}" > .npmrc
           yarn
+          ls -l dist
           npm publish ./dist --access public
