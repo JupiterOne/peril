@@ -144,8 +144,12 @@ export async function depScanCheck(findings: DepScanFinding[], config: Config = 
     info: 0
   };
 
-  const ignoreSeverityList = config.values.checks.code.depscanFindings.ignoreSeverityList;
-  const ignoreUnfixable = config.values.checks.code.depscanFindings.ignoreUnfixable;
+  const {
+    missingValue
+    ignoreSeverityList,
+    ignoreUnfixable,
+    noVulnerabilitiesCredit
+  } = config.values.checks.code.depscanFindings;
   const ignoreSeverities = ignoreSeverityList.toLowerCase().split(',').map(i => i.trim());
 
   for (const finding of findings) {
