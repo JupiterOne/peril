@@ -52,7 +52,7 @@
   },
   "files": [
     "/bin",
-    "/dist",
+    "/src",
     "defaultConfig.json"
   ],
   "oclif": {
