@@ -1,7 +1,7 @@
 {
   "name": "@jupiterone/peril",
   "description": "Project Risk Analysis and Reporting Tool",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "author": "JupiterOne <developer@jupiterone.com>",
   "repository": "jupiterone/project-risk-analyzer",
   "license": "MIT",
@@ -52,7 +52,7 @@
   },
   "files": [
     "/bin",
-    "/dist",
+    "/src",
     "defaultConfig.json"
   ],
   "oclif": {
