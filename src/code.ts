@@ -132,12 +132,13 @@ export async function depScanCheck(findings: DepScanFinding[], config: Config = 
   } = config.values.checks.code.depscanFindings;
 
   if (!findings.length) {
-    return {
+    recommendations.push('Ensure ShiftLeft/scan dependency check runs prior to peril.');
+    return formatRisk({
       check,
       description: 'Code - Missing Dependency Scan',
       value: missingValue,
       recommendations
-    }
+    }, riskCategory, check);
   }
 
   let value = 0;
