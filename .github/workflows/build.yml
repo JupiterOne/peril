@@ -100,7 +100,7 @@ jobs:
           echo "need_docker_build=true" >> $GITHUB_ENV
       - name: Login to DockerHub Registry
         if: env.need_docker_build
-        run: echo ${{ secrets.DOCKERHUB_TOKEN }} | docker login -u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
+        run: echo ${{ secrets.DOCKERHUB_TOKEN }} | docker login -u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin docker.io
 
       - name: Build the latest Docker image
         if: env.need_docker_build
