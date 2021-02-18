@@ -18,6 +18,8 @@ Use-cases include:
 
 ## Usage
 
+### Via NPM
+
 ```sh-session
 $ npm install -g @jupiterone/peril
 $ peril --help
@@ -36,6 +38,12 @@ OPTIONS
   -v, --verbose            enable verbose output
   --accept                 accept all risk (do not exit with non-zero status)
   --debug                  debug mode, very verbose
+```
+
+### Via Docker
+
+```sh-session
+docker run -v $PWD:/app -e 'J1_API_TOKEN=<token>' -e 'J1_ACCOUNT=<accountname>' jupiterone/peril peril --verbose --dir /app
 ```
 
 ## Assumptions
