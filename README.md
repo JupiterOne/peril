@@ -1,7 +1,6 @@
 # peril
 
 ![GitHub](https://img.shields.io/github/license/jupiterone/peril)
-![Snyk Vulnerabilities for npm package version](https://img.shields.io/snyk/vulnerabilities/npm/@jupiterone/peril)
 
 Project Risk Analysis and Reporting Tool
 
