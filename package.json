@@ -1,10 +1,10 @@
 {
   "name": "@jupiterone/peril",
   "description": "Project Risk Analysis and Reporting Tool",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "author": "JupiterOne <developer@jupiterone.com>",
   "repository": "jupiterone/project-risk-analyzer",
-  "license": "MPL-2.0",
+  "license": "MIT",
   "main": "dist/index.js",
   "bin": {
     "peril": "./bin/run"
