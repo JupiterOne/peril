@@ -3929,6 +3929,11 @@ is-glob@^4.0.0, is-glob@^4.0.1, is-glob@~4.0.1:
   dependencies:
     is-extglob "^2.1.1"
 
+is-mingw@^2.0.0:
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/is-mingw/-/is-mingw-2.0.0.tgz#cb746977396808b49da0f9dc707a734328bd3be3"
+  integrity sha512-9aI87IfnhMF59hLfg+ZZzuR72+Rybw4VPDz7dOCw2jJpS+nIqhhC0y1/O05Bc4JnxJBHMmlNluzbnzNKKcs54A==
+
 is-number@^3.0.0:
   version "3.0.0"
   resolved "https://registry.yarnpkg.com/is-number/-/is-number-3.0.0.tgz#24fd6201a4782cf50561c810276afc7d12d71195"
@@ -6287,6 +6292,13 @@ strip-json-comments@^3.1.0, strip-json-comments@^3.1.1:
   version "3.1.1"
   resolved "https://registry.yarnpkg.com/strip-json-comments/-/strip-json-comments-3.1.1.tgz#31f1281b3832630434831c310c01cccda8cbe006"
   integrity sha512-6fPc+R4ihwqP6N/aIv2f1gMH8lOVtWQHoqC4yK6oSDVVocumAsfCqjkXnqiYMhmMwS/mEHLp7Vehlt3ql6lEig==
+
+supports-ansi@^1.0.6:
+  version "1.0.6"
+  resolved "https://registry.yarnpkg.com/supports-ansi/-/supports-ansi-1.0.6.tgz#c13cf8fccaa6640b56f158a20927e4d09775cd52"
+  integrity sha512-DVJz7dTzvlD3FlY1r/oNTDitpN8WHD7VQzL+TJjVKmlgDHJf6FUO29oYj6HME4/EsSWELbBlPVq6Wgp7zDFHGQ==
+  dependencies:
+    is-mingw "^2.0.0"
 
 supports-color@^5.3.0:
   version "5.5.0"
