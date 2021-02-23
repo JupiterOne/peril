@@ -6,8 +6,10 @@ import { gatherCodeRisk } from './code';
 import { gatherProjectRisk } from './project';
 import { RiskCategory } from './types';
 import { log, getLogOutput } from './helpers';
+import path from 'path';
 import fs from 'fs-extra';
 
+const supportsAnsi = require('supports-ansi');
 class Peril extends Command {
   static description = 'Project Risk-Analysis and Reporting Tool'
 
@@ -20,14 +22,16 @@ class Peril extends Command {
     config: flags.string({char: 'c', description: 'Path to override config file'}),
     log: flags.string({char: 'l', description: 'Path to output log file'}),
     verbose: flags.boolean({char: 'v', description: 'Enable verbose output'}),
-    accept: flags.boolean({description: 'Accept all risk (do not exit with non-zero status)'})
+    accept: flags.boolean({description: 'Accept all risk (do not exit with non-zero status)'}),
+    noBanner: flags.boolean({description: 'Do not display splash banner', default: false})
   }
 
   async run() {
     const {flags} = this.parse(Peril)
+    await splashBanner(flags.noBanner);
     await initConfig(flags);
 
-    log('peril invoked with: peril ' + process.argv.slice(2).join(' '));
+    log('invoked with: peril ' + process.argv.slice(2).join(' '));
     log(JSON.stringify(redactConfig(getConfig()), null, 2), 'DEBUG');
 
     const riskCategories: RiskCategory[] = [];
@@ -105,6 +109,13 @@ function extractRecommendations(categories: RiskCategory[]): string[] {
 
 async function writeLogFile(logFile: string): Promise<void> {
   return fs.writeFile(logFile, getLogOutput());
+}
+
+async function splashBanner(shouldSuppress: boolean): Promise<void> {
+  if (!shouldSuppress) {
+    const headerFile = supportsAnsi ? 'peril.ans' : 'peril.txt';
+    console.log(await fs.readFile(path.join(__dirname, '..', 'assets', headerFile), 'utf8'));
+  }
 }
 
 export = Peril
