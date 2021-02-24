@@ -33,6 +33,8 @@ jobs:
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     needs: test
+    outputs:
+      didpublishnpm: ${{ steps.build-and-publish.outputs.didpublishnpm }}
     strategy:
       fail-fast: false
       matrix:
@@ -67,6 +69,7 @@ jobs:
           node-version: 12.x
 
       - name: Build and Publish
+        id: build-and-publish
         if: env.shouldpublishnpm
         env:
           NPM_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}

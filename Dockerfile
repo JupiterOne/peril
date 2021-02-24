@@ -8,4 +8,5 @@ WORKDIR /opt/jupiterone
 COPY --from=builder /opt/jupiterone/dist .
 RUN yarn install --production
 RUN ln -s /opt/jupiterone/bin/run /usr/bin/peril
+RUN pwd
 CMD ["/usr/bin/peril"]
