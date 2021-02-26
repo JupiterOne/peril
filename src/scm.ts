@@ -108,7 +108,7 @@ export async function gpgVerifyRecentCommitsCheck(cmdRunner: any = undefined, co
 
 export async function gpgVerifyCommit(gitref: string, cmdRunner: any = undefined): Promise<boolean> {
   const cmd = await runCmd('git verify-commit --raw ' + gitref, cmdRunner);
-  return !cmd.failed && !!/VALIDSIG/.exec(cmd.stderr); // git puts this on stderr for some reason
+  return Boolean(/NEWSIG/.exec(cmd.stderr)); // git puts this on stderr for some reason
 }
 
 export async function gatherFacts(cmdRunner: any = undefined, config: Config = getConfig()): Promise<SCMFacts> {
