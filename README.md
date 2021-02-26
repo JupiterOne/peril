@@ -1,7 +1,11 @@
 # peril
 
 ![GitHub](https://img.shields.io/github/license/jupiterone/peril)
-![Snyk Vulnerabilities for npm package version](https://img.shields.io/snyk/vulnerabilities/npm/@jupiterone/peril)
+![GitHub Workflow Status](https://img.shields.io/github/workflow/status/jupiterone/peril/Build)
+![GitHub top language](https://img.shields.io/github/languages/top/jupiterone/peril)
+![npm (scoped)](https://img.shields.io/npm/v/@jupiterone/peril)
+![Docker Image Size (latest by date)](https://img.shields.io/docker/image-size/jupiterone/peril)
+![OSS Lifecycle](https://img.shields.io/osslifecycle/jupiterone/peril)
 
 Project Risk Analysis and Reporting Tool
 
