@@ -31,7 +31,7 @@ describe('config', () => {
     expect(await gatherOptionalConfig(cfg, jest.fn().mockReturnValueOnce(''))).toEqual({});
   });
 
-  it.only('gatherOptionalConfig returns parsed JSON from executable', async () => {
+  it('gatherOptionalConfig returns parsed JSON from executable', async () => {
     const cfg = cloneDeep(config);
     // executable script provides custom facts
     cfg.flags.config = path.join(__dirname, '/../test/fixtures/testConfig.sh');

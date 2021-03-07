@@ -207,3 +207,12 @@ export interface LogLevelValues {
   error: string;
   debug: string;
 }
+
+export interface Override {
+  signedBy: string;
+  exp: number;
+  expires: string;
+  rootSHA: string;
+  justification: string;
+  credit: number;
+}
