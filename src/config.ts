@@ -69,5 +69,9 @@ export async function gatherOptionalConfig(config: Config = getConfig(), readFil
 }
 
 export function getConfig(): Config {
+  if (process.env.NODE_ENV === 'test') {
+    // console.log('getConfig called during tests')
+    return require('../test/fixtures/testConfig').config;
+  }
   return config;
 }
