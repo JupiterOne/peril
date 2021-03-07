@@ -61,8 +61,7 @@ export async function getGitDiffStats(mergeRef: string, cmdRunner: any = undefin
   const cmd = `git diff --ignore-all-space --shortstat ${mergeRef} HEAD -- . ${excludeSyntax}`;
   // git syntax above requires shell to parse.
   // NOTE: this will likely not work on Microsoft Windows.
-  const shellRequired = true;
-  const { stdout: shortstat, failed } = await runCmd(cmd, cmdRunner, shellRequired);
+  const { stdout: shortstat, failed } = await runCmd(cmd, cmdRunner, {shell: true});
   if (failed) {
     return {
       filesChanged: -1,

@@ -28,12 +28,16 @@ export function whereis(exe: string): string|undefined {
   return undefined;
 }
 
-export async function runCmd(cmd: string, execaCommand = execa.command, shell = false): Promise<execa.ExecaReturnValue | execa.ExecaReturnValue & Error> {
+export const execaCommand = execa.command;
+
+export async function runCmd(cmd: string, execaCommand = execa.command, options: any = { shell: false }): Promise<execa.ExecaReturnValue | execa.ExecaReturnValue & Error> {
   let res;
   const dir = get(getConfig(), 'flags.dir', process.cwd());  // respect dir flag if present
   try {
-  res = await execaCommand(cmd, { cwd: dir, shell });
+  res = await execaCommand(cmd, Object.assign(options, { cwd: dir }));
   } catch (e) {
+    // don't propagate exception here since execa Errors also
+    // contain ExecaReturnValue properties like failed, stderr, etc.
     return e;
   }
   return res;
