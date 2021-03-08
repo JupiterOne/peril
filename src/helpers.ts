@@ -103,3 +103,12 @@ export function log(msg: any, level: LogLevel = 'INFO', config: Config = getConf
 export function getLogOutput(): string {
   return logLines.join('\n');
 }
+
+export function epochDaysFromNow(days: number, now = Date.now()): number {
+  return now + days
+    * 24    // hours/day
+    * 60    // minutes/hour
+    * 60    // seconds/minute
+    * 1000; // millis/second
+    // What's 1000 times more awesome than a UNIX epoch?
+}

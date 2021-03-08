@@ -1,6 +1,6 @@
-import { getGPGIdentity, clearsign, getRootSHA, createOverride } from './override';
+import { getGPGIdentity, clearsign, getRootSHA, createOverride, epochDaysFromNow } from './override';
 import { config } from '../test/fixtures/testConfig';
-import { cloneDeep, create, over } from 'lodash';
+import { cloneDeep } from 'lodash';
 
 describe('override features', () => {
 
@@ -9,10 +9,7 @@ describe('override features', () => {
 
   it('getGPGIdentity parses gpg secret keys list output for identity', async () => {
     const mockRunCmd = jest.fn();
-    const id = await getGPGIdentity(
-      config,
-      mockRunCmd.mockResolvedValueOnce({ stdout: gpgIdRaw })
-    );
+    const id = await getGPGIdentity(mockRunCmd.mockResolvedValueOnce({ stdout: gpgIdRaw }));
     expect(id).toEqual(gpgId);
   });
 
@@ -25,13 +22,13 @@ describe('override features', () => {
 
   it('getGPGIdentity returns empty string when gpg fails to execute properly', async () => {
     const mockRunCmd = jest.fn().mockRejectedValue(new Error('ENOENT'));
-    const id = await getGPGIdentity(config, mockRunCmd);
+    const id = await getGPGIdentity(mockRunCmd);
     expect(id).toEqual('');
   });
 
   it('getGPGIdentity returns empty string when gpg lists no identifiable keys', async () => {
     const mockRunCmd = jest.fn().mockResolvedValueOnce({ stdout: 'grp:::::::::9323654C065DA99813D377011A1:' });
-    const id = await getGPGIdentity(config, mockRunCmd);
+    const id = await getGPGIdentity(mockRunCmd);
     expect(id).toEqual('');
   });
 
@@ -75,12 +72,12 @@ gopUr20+jOVMJiFRKq+AnHZ2rZ78BCPCcFv4xqImai0gAz/1K+nv4yPP80Al6KO+
       .mockResolvedValueOnce({ stdout: gpgIdRaw })
       .mockResolvedValueOnce({ stdout: rootSHA });
     const override = await createOverride(-10, expiry, justification, mockRunCmd);
-    console.log({override});
     expect(override.credit).toBe(-10);
     expect(override.exp).toBe(expiry);
     expect(override.justification).toBe(justification);
     expect(override.rootSHA).toBe(rootSHA);
     expect(override.signedBy).toBe(gpgId);
   });
+
 });
 

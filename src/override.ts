@@ -1,6 +1,5 @@
-import { getConfig } from './config';
 import { runCmd } from './helpers';
-import { Config, Override } from './types';
+import { Override } from './types';
 
 /*
 
@@ -28,7 +27,7 @@ export async function createOverride(credit: number, expiry: number, justificati
   return {
     exp: expiry,
     expires: (new Date(expiry)).toString(),
-    signedBy: await getGPGIdentity(getConfig(), cmdRunner),
+    signedBy: await getGPGIdentity(cmdRunner),
     rootSHA: await getRootSHA(cmdRunner),
     justification,
     credit
@@ -44,14 +43,11 @@ export async function getRootSHA(cmdRunner: any = undefined): Promise<string> {
   return res.stdout;
 }
 
-export async function getGPGIdentity(config: Config = getConfig(), cmdRunner: any = undefined): Promise<string> {
-  const { gpgPath } = config.facts.scm;
-  if (!gpgPath) {
-    return '';
-  }
+export async function getGPGIdentity(cmdRunner: any = undefined): Promise<string> {
   let identity: string;
   try {
-    const secretKeys = (await runCmd(gpgPath + ' --list-secret-keys --with-colons', cmdRunner)).stdout.split('\n');
+    const gpgKeys = await runCmd('gpg --list-secret-keys --with-colons', cmdRunner);
+    const secretKeys = gpgKeys.stdout.split('\n');
     const uidLine = secretKeys.filter(k => /^uid:/.exec(k)).pop();
     // uidLine is of form:
     // uid:u::::1412160812::4A19E3CAE9B6FFD6D81EAC012D1110A19E074749::Some User <some.user@company.com>::::::::::0:
