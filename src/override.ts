@@ -1,5 +1,8 @@
 import { runCmd } from './helpers';
 import { Override } from './types';
+import * as fs from 'fs-extra';
+import { log } from './helpers';
+import path from 'path';
 
 /*
 
@@ -22,6 +25,19 @@ gpg: Good signature from "Erich Smith <erich.smith@jupiterone.com>" [ultimate]
  parse JSON body
  apply
 */
+
+const Authorized_Keyring = './authorized_pubkeys.gpg';
+
+export async function importPublicKeys(keysDir: string, cmdRunner: any = undefined): Promise<void> {
+  for (const keyFile of await fs.readdir(keysDir)) {
+    const keyPath = path.join(keysDir, keyFile);
+    const cmd = await runCmd(`gpg --no-default-keyring --keyring ${Authorized_Keyring} --import ${keyPath}`, cmdRunner);
+    if (cmd.failed) {
+      log('Error importing GPG key: ' + cmd.stderr, 'ERROR');
+    }
+  }
+  // TODO: ensure cleanup of Authorized_Keyring file
+}
 
 export async function createOverride(credit: number, expiry: number, justification: string, cmdRunner: any = undefined): Promise<Override> {
   return {
