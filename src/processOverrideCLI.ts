@@ -31,7 +31,7 @@ export async function processOverrideCommand(): Promise<void> {
   ];
   const { credit, expiry, justification } = await prompts(questions);
   const override = await createOverride(credit, expiry, justification);
-  const overrideFile = '.peril/override-until_' + (new Date(expiry)).toISOString();
+  const overrideFile = '.peril/override-until_' + (new Date(expiry)).toISOString() + '.asc';
 
   console.log(override);
 
@@ -49,6 +49,7 @@ export async function processOverrideCommand(): Promise<void> {
       return;
     }
     await fs.writeFile(overrideFile, sign.stdout);
+    console.log('Override written as ' + overrideFile + '. Please commit this to the repo!');
   } else {
     console.log('Override canceled.');
   }

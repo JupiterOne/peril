@@ -6,6 +6,7 @@ import { gatherCodeRisk } from './code';
 import { gatherProjectRisk } from './project';
 import { RiskCategory } from './types';
 import { log, getLogOutput } from './helpers';
+import { processOverrideCommand } from './processOverrideCLI';
 import path from 'path';
 import fs from 'fs-extra';
 
@@ -23,13 +24,19 @@ class Peril extends Command {
     log: flags.string({char: 'l', description: 'Path to output log file'}),
     verbose: flags.boolean({char: 'v', description: 'Enable verbose output'}),
     accept: flags.boolean({description: 'Accept all risk (do not exit with non-zero status)'}),
-    noBanner: flags.boolean({description: 'Do not display splash banner', default: false})
+    noBanner: flags.boolean({description: 'Do not display splash banner', default: false}),
+    override: flags.boolean({description: 'Create a project override object', default: false})
   }
 
   async run() {
     const {flags} = this.parse(Peril)
     await splashBanner(flags.noBanner);
     await initConfig(flags);
+
+    if (flags.override) {
+      await processOverrideCommand();
+      return;
+    }
 
     log('invoked with: peril ' + process.argv.slice(2).join(' '));
     log(JSON.stringify(redactConfig(getConfig()), null, 2), 'DEBUG');
