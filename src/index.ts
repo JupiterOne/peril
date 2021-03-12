@@ -42,8 +42,6 @@ class Peril extends Command {
     log('invoked with: peril ' + process.argv.slice(2).join(' '));
     log(JSON.stringify(redactConfig(getConfig()), null, 2), 'DEBUG');
 
-    process.exit(0)
-
     const riskCategories: RiskCategory[] = [];
 
     log('Analyzing risk factors...');

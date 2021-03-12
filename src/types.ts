@@ -52,8 +52,8 @@ export interface JupiterOneFacts {
 export interface OverrideFacts {
   override: {
     trustedPubKeysDir: MaybeString;
-    trustedPubKeys: MaybeString[];
-    repoOverrides: MaybeString[];
+    trustedPubKeys: string[];
+    repoOverrides: string[];
   }
 }
 

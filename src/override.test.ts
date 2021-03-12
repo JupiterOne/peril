@@ -80,7 +80,7 @@ gopUr20+jOVMJiFRKq+AnHZ2rZ78BCPCcFv4xqImai0gAz/1K+nv4yPP80Al6KO+
     expect(override.signedBy).toBe(gpgId);
   });
 
-  it('importPublicKeys imports all keys found in trusted keyDir', async () => {
+  it('importPublicKeys imports all given keys', async () => {
     const mockRunCmd = jest.fn()
       .mockResolvedValue({stdout: `
 gpg: keybox './somekeyring.gpg' created
@@ -88,8 +88,13 @@ gpg: key C348A9E00AE60B1C: public key "Trusted User <trusted.user@corp.com>" imp
 gpg: Total number processed: 1
 gpg:               imported: 1
 `});
-    const keysDir = path.join(__dirname, '../test/fixtures/gpgKeys');
-    await importPublicKeys(keysDir, mockRunCmd);
+
+    const keys = [
+      '/some/path/to/key1.gpg',
+      '/some/path/to/key2.gpg',
+    ];
+
+    await importPublicKeys(keys, mockRunCmd);
     expect(mockRunCmd).toHaveBeenCalledTimes(2);
   });
 

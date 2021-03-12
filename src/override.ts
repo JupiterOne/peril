@@ -71,10 +71,9 @@ export async function validatePubKeys(keys: string[]): Promise<string[]> {
   return validPubKeys;
 }
 
-export async function importPublicKeys(keysDir: string, cmdRunner: any = undefined): Promise<void> {
-  for (const keyFile of await fs.readdir(keysDir)) {
-    const keyPath = path.join(keysDir, keyFile);
-    const cmd = await runCmd(`gpg --no-default-keyring --keyring ${Authorized_Keyring} --import ${keyPath}`, cmdRunner);
+export async function importPublicKeys(keys: string[], cmdRunner: any = undefined): Promise<void> {
+  for (const key of keys) {
+    const cmd = await runCmd(`gpg --no-default-keyring --keyring ${Authorized_Keyring} --import ${key}`, cmdRunner);
     if (cmd.failed) {
       log('Error importing GPG key: ' + cmd.stderr, 'ERROR');
     }
