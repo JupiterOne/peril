@@ -1,6 +1,6 @@
 import { runCmd } from './helpers';
 import { getConfig } from './config';
-import { Override, Config, OverrideFacts } from './types';
+import { Override, Config, OverrideFacts, RiskCategory, Risk } from './types';
 import * as fs from 'fs-extra';
 import { log, findFiles, isWorldWritable } from './helpers';
 import path from 'path';
@@ -44,6 +44,46 @@ export async function gatherFacts(config: Config = getConfig()): Promise<Overrid
         repoOverrides: await findFiles(String(repoOverridesDir), repoOverridesPattern)
     }
   };
+}
+
+export async function validateOverride(override: Override, now: Date = new Date(), cmdRunner: any = undefined): Promise<boolean> {
+  const then = new Date(override.exp);
+  if (now > then) {
+    log(`Ignoring expired override credit of ${override.credit}, expiry ${override.expires}.`, 'DEBUG');
+    return false;
+  }
+  // does the rootSHA match this repo?
+  const rootSHA = await getRootSHA(cmdRunner);
+  if (rootSHA !== override.rootSHA) {
+    log(`Ignoring copy/paste override credit of ${override.credit}, signer ${override.signedBy}.`, 'DEBUG');
+    return false;
+  }
+
+  return true;
+}
+
+export async function verifyOverrideSignature(file: string, cmdRunner: any = undefined): Promise<boolean> {
+  const cmd = await runCmd(`gpg --no-default-keyring --keyring ${Authorized_Keyring} --verify ${file}`, cmdRunner);
+  if (cmd.failed) {
+    return false;
+  }
+  // gpg puts this on stderr for some reason...
+  return !!/Good signature/.exec(cmd.stderr);
+}
+
+export async function parseOverride(file: string): Promise<Override> {
+  let payload;
+  try {
+    const data = await fs.readFile(file, 'utf8');
+    // marshal data between JSON object start/end delimiters
+    // i.e. ignore all GPG clearsign padding
+    payload = '{' + data.split('{')[1].split('}')[0] + '}';
+  } catch (err) {
+    log(`Error parsing ${file}: ${err}`, 'WARN');
+    return {} as Override;
+  }
+
+  return JSON.parse(payload) as Override;
 }
 
 export async function validatePubKeys(keys: string[]): Promise<string[]> {
@@ -120,3 +160,48 @@ export async function clearsign(data: any, cmdRunner: any = undefined): Promise<
   const res = await runCmd('gpg --clearsign', cmdRunner, { input: JSON.stringify(data, null, 2) });
   return res.stdout || '';
 }
+/*
+export async function () {
+  const keys = [
+    '/Users/erichs/repos/jupiterone/peril/gpgkeys/erichs.gpg'
+  ];
+  const o = '/Users/erichs/repos/jupiterone/peril/.peril/override-until_2021-03-13T00:58:47.392Z.asc';
+  // const o = '/Users/erichs/repos/jupiterone/peril/.peril/override-until_2021-03-12T00:58:47.392Z.asc';
+
+  await importPublicKeys(keys);
+  const override = await parseOverride(o);
+  const isValid = await validateOverride(override);
+  if (!isValid) {
+    throw new Error('invalid Risk override');
+  }
+  return override;
+}
+
+export async function gatherRiskOverrides(config: Config = getConfig()): Promise<RiskCategory> {
+  const checks: Promise<Risk>[] = [];
+  const defaultRiskValue = 0;
+
+  const j1Client = config.facts.j1.client;
+  if (j1Client) {
+    const projectName = config.facts.project.name;
+    const findings = await j1Client.gatherEntities(`Find Finding that HAS CodeRepo with name='${projectName}'`);
+    const { snykFindings, maintenanceFindings, unknownFindings } = sortFindings(findings as any[]);
+    checks.push(codeRepoSnykFindingsCheck(snykFindings));
+    checks.push(codeRepoMaintenanceFindingsCheck(maintenanceFindings));
+    if (unknownFindings.length) {
+      log(`WARNING: ${projectName} CodeRepo has ${unknownFindings.length} Findings of unknown type. These do not currently contribute to risk scoring, but should be addressed.`, 'WARN');
+    }
+  }
+  checks.push(threatModelCheck());
+
+  // gather risks
+  const risks = await Promise.all(checks);
+
+  return {
+    title: 'PROJECT Risk',
+    defaultRiskValue,
+    risks,
+    scoreSubtotal: calculateRiskSubtotal(risks, defaultRiskValue)
+  };
+}
+*/
