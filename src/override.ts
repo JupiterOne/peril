@@ -1,7 +1,8 @@
 import { runCmd } from './helpers';
-import { Override } from './types';
+import { getConfig } from './config';
+import { Override, Config, OverrideFacts } from './types';
 import * as fs from 'fs-extra';
-import { log } from './helpers';
+import { log, findFiles } from './helpers';
 import path from 'path';
 
 /*
@@ -27,6 +28,21 @@ gpg: Good signature from "Erich Smith <erich.smith@jupiterone.com>" [ultimate]
 */
 
 const Authorized_Keyring = './authorized_pubkeys.gpg';
+
+export async function gatherFacts(cmdRunner: any = undefined, config: Config = getConfig()): Promise<OverrideFacts> {
+  const repoOverridesPattern = '.*override-until_.*.asc$';
+  const repoOverridesDir = path.join(config.flags.dir, '.peril');
+  const trustedPubKeysDir = config.flags.pubkeyDir;
+  const trustedPubKeyPattern = '.*.gpg$';
+
+  return {
+    override: {
+        trustedPubKeysDir,
+        trustedPubKeys: await findFiles(String(trustedPubKeysDir), trustedPubKeyPattern),
+        repoOverrides: await findFiles(String(repoOverridesDir), repoOverridesPattern)
+    }
+  };
+}
 
 export async function importPublicKeys(keysDir: string, cmdRunner: any = undefined): Promise<void> {
   for (const keyFile of await fs.readdir(keysDir)) {

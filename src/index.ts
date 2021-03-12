@@ -25,7 +25,8 @@ class Peril extends Command {
     verbose: flags.boolean({char: 'v', description: 'Enable verbose output'}),
     accept: flags.boolean({description: 'Accept all risk (do not exit with non-zero status)'}),
     noBanner: flags.boolean({description: 'Do not display splash banner', default: false}),
-    override: flags.boolean({description: 'Create a project override object', default: false})
+    override: flags.boolean({description: 'Create a project override object', default: false}),
+    pubkeyDir: flags.string({char: 'p', description: 'Full path to directory containing trusted public GPG keys'})
   }
 
   async run() {
@@ -40,6 +41,8 @@ class Peril extends Command {
 
     log('invoked with: peril ' + process.argv.slice(2).join(' '));
     log(JSON.stringify(redactConfig(getConfig()), null, 2), 'DEBUG');
+
+    process.exit(0)
 
     const riskCategories: RiskCategory[] = [];
 
