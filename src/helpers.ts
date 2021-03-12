@@ -112,3 +112,10 @@ export function epochDaysFromNow(days: number, now = Date.now()): number {
     * 1000; // millis/second
     // What's 1000 times more awesome than a UNIX epoch?
 }
+
+export function isWorldWritable(mode: number): boolean {
+  const worldbit = mode & 0o0007; // isolate the final (world) octet of
+                                  // user  group  world
+                                  // rwx   rwx    rwx
+  return [7, 6, 3, 2].includes(worldbit);
+}

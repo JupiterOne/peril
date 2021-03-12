@@ -2,7 +2,7 @@ import { runCmd } from './helpers';
 import { getConfig } from './config';
 import { Override, Config, OverrideFacts } from './types';
 import * as fs from 'fs-extra';
-import { log, findFiles } from './helpers';
+import { log, findFiles, isWorldWritable } from './helpers';
 import path from 'path';
 
 /*
@@ -29,19 +29,46 @@ gpg: Good signature from "Erich Smith <erich.smith@jupiterone.com>" [ultimate]
 
 const Authorized_Keyring = './authorized_pubkeys.gpg';
 
-export async function gatherFacts(cmdRunner: any = undefined, config: Config = getConfig()): Promise<OverrideFacts> {
+export async function gatherFacts(config: Config = getConfig()): Promise<OverrideFacts> {
   const repoOverridesPattern = '.*override-until_.*.asc$';
   const repoOverridesDir = path.join(config.flags.dir, '.peril');
-  const trustedPubKeysDir = config.flags.pubkeyDir;
-  const trustedPubKeyPattern = '.*.gpg$';
+
+  const pubKeysDir = config.flags.pubkeyDir;
+  const pubKeyPattern = '.*.gpg$';
+  const availablePubKeys = await findFiles(String(pubKeysDir), pubKeyPattern);
 
   return {
     override: {
-        trustedPubKeysDir,
-        trustedPubKeys: await findFiles(String(trustedPubKeysDir), trustedPubKeyPattern),
+        trustedPubKeysDir: pubKeysDir,
+        trustedPubKeys: await validatePubKeys(availablePubKeys),
         repoOverrides: await findFiles(String(repoOverridesDir), repoOverridesPattern)
     }
   };
+}
+
+export async function validatePubKeys(keys: string[]): Promise<string[]> {
+  const validPubKeys: string[] = [];
+  const key = keys[0];
+  if (!key) {
+    return [];
+  }
+
+  for (const key of keys) {
+    try {
+      const { mode: dirMode } = await fs.stat(path.dirname(key));
+      const { mode: keyMode } = await fs.stat(key);
+      if (!isWorldWritable(dirMode) && !isWorldWritable(keyMode)) {
+        validPubKeys.push(key);
+      } else {
+        log(`Pubkey ${key} is world writabile and cannot be trusted! Skipping...`);
+      }
+    } catch (err) {
+      log('Error accessing pubkey file or directory: ' + err);
+      return [];
+    }
+  }
+
+  return validPubKeys;
 }
 
 export async function importPublicKeys(keysDir: string, cmdRunner: any = undefined): Promise<void> {

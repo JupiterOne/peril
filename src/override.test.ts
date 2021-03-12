@@ -1,4 +1,4 @@
-import { getGPGIdentity, clearsign, getRootSHA, createOverride, epochDaysFromNow, importPublicKeys } from './override';
+import { getGPGIdentity, clearsign, getRootSHA, createOverride, importPublicKeys, gatherFacts } from './override';
 import { config } from '../test/fixtures/testConfig';
 import { cloneDeep } from 'lodash';
 import path from 'path';
@@ -91,6 +91,16 @@ gpg:               imported: 1
     const keysDir = path.join(__dirname, '../test/fixtures/gpgKeys');
     await importPublicKeys(keysDir, mockRunCmd);
     expect(mockRunCmd).toHaveBeenCalledTimes(2);
+  });
+
+  it('gatherFacts gathers basic Risk Override facts', async () => {
+    const konfig = cloneDeep(config);
+    konfig.flags.pubkeyDir = path.join(__dirname, '../test/fixtures/gpgKeys');
+    konfig.flags.dir = path.join(__dirname, '../test/fixtures');
+    const facts = await gatherFacts(konfig);
+    expect(facts.override.trustedPubKeysDir).toEqual(konfig.flags.pubkeyDir);
+    expect(facts.override.trustedPubKeys.length).toEqual(2);
+    expect(facts.override.repoOverrides.length).toEqual(1);
   });
 
 });
