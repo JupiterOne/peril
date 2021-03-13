@@ -4,6 +4,7 @@ import { redactConfig } from './helpers';
 import { gatherLocalSCMRisk } from './scm';
 import { gatherCodeRisk } from './code';
 import { gatherProjectRisk } from './project';
+import { gatherRiskOverrides } from './override';
 import { RiskCategory } from './types';
 import { log, getLogOutput } from './helpers';
 import { processOverrideCommand } from './processOverrideCLI';
@@ -49,6 +50,7 @@ class Peril extends Command {
     riskCategories.push(await gatherLocalSCMRisk());
     riskCategories.push(await gatherCodeRisk());
     riskCategories.push(await gatherProjectRisk());
+    riskCategories.push(await gatherRiskOverrides());
 
     const riskTotal = Math.max(riskCategories.reduce((acc, c) => {
       acc += c.scoreSubtotal;

@@ -1,31 +1,11 @@
-import { runCmd } from './helpers';
+import { formatRisk, runCmd } from './helpers';
 import { getConfig } from './config';
 import { Override, Config, OverrideFacts, RiskCategory, Risk } from './types';
 import * as fs from 'fs-extra';
-import { log, findFiles, isWorldWritable } from './helpers';
+import { log, findFiles, isWorldWritable, calculateRiskSubtotal } from './helpers';
 import path from 'path';
 
-/*
-
-  accept --pubkeyDir
-  for each file in pubkeyDir, attempt:
-  gpg --no-default-keyring --keyring ./somekeyring.gpg --import ./pubkeyDir/$FILE
-
-gpg: keybox './somekeyring.gpg' created
-gpg: key E73869E02AE60C1E: public key "Erich Smith <erich.smith@jupiterone.com>" imported
-gpg: Total number processed: 1
-gpg:               imported: 1
-
-  Then, for each .asc file in .peril/, do
-gpg --no-default-keyring --keyring ./somekeyring.gpg --verify .override.asc
-gpg: Signature made Mon Feb 22 21:59:40 2021 EST
-gpg:                using RSA key 628AD0CFB783B10FE198CF61E73869E02AE60C1E
-gpg: Good signature from "Erich Smith <erich.smith@jupiterone.com>" [ultimate]
-
- If valid, strip line 1, then cat until -----BEGIN PGP SIGNATURE-----: this is JSON body
- parse JSON body
- apply
-*/
+const riskCategory = 'override';
 
 const Authorized_Keyring = './authorized_pubkeys.gpg';
 
@@ -118,7 +98,10 @@ export async function importPublicKeys(keys: string[], cmdRunner: any = undefine
       log('Error importing GPG key: ' + cmd.stderr, 'ERROR');
     }
   }
-  // TODO: ensure cleanup of Authorized_Keyring file
+}
+
+export async function removePublicKeyring(cmdRunner: any = undefined): Promise<void> {
+  await runCmd(`rm ${Authorized_Keyring}*`, cmdRunner, { shell: true });
 }
 
 export async function createOverride(credit: number, expiry: number, justification: string, cmdRunner: any = undefined): Promise<Override> {
@@ -160,48 +143,60 @@ export async function clearsign(data: any, cmdRunner: any = undefined): Promise<
   const res = await runCmd('gpg --clearsign', cmdRunner, { input: JSON.stringify(data, null, 2) });
   return res.stdout || '';
 }
-/*
-export async function () {
-  const keys = [
-    '/Users/erichs/repos/jupiterone/peril/gpgkeys/erichs.gpg'
-  ];
-  const o = '/Users/erichs/repos/jupiterone/peril/.peril/override-until_2021-03-13T00:58:47.392Z.asc';
-  // const o = '/Users/erichs/repos/jupiterone/peril/.peril/override-until_2021-03-12T00:58:47.392Z.asc';
 
-  await importPublicKeys(keys);
-  const override = await parseOverride(o);
+export async function manualOverrideCheck(overrideFile: string, config: Config = getConfig()): Promise<Risk> {
+  const check = 'manual';
+  const recommendations: string[] = [];
+  const override = await parseOverride(overrideFile);
   const isValid = await validateOverride(override);
+
   if (!isValid) {
-    throw new Error('invalid Risk override');
+    return formatRisk({
+      check,
+      value: 0,
+      description: `Expired or Invalid Override: ${JSON.stringify(override)}`,
+      recommendations
+    }, riskCategory, check);
   }
-  return override;
+
+  return formatRisk({
+    check,
+    value: override.credit,
+    description: `justification: ${override.justification}, authorized by: ${override.signedBy}`,
+    recommendations
+  }, riskCategory, check)
 }
 
 export async function gatherRiskOverrides(config: Config = getConfig()): Promise<RiskCategory> {
   const checks: Promise<Risk>[] = [];
   const defaultRiskValue = 0;
 
-  const j1Client = config.facts.j1.client;
-  if (j1Client) {
-    const projectName = config.facts.project.name;
-    const findings = await j1Client.gatherEntities(`Find Finding that HAS CodeRepo with name='${projectName}'`);
-    const { snykFindings, maintenanceFindings, unknownFindings } = sortFindings(findings as any[]);
-    checks.push(codeRepoSnykFindingsCheck(snykFindings));
-    checks.push(codeRepoMaintenanceFindingsCheck(maintenanceFindings));
-    if (unknownFindings.length) {
-      log(`WARNING: ${projectName} CodeRepo has ${unknownFindings.length} Findings of unknown type. These do not currently contribute to risk scoring, but should be addressed.`, 'WARN');
-    }
-  }
-  checks.push(threatModelCheck());
-
-  // gather risks
-  const risks = await Promise.all(checks);
-
-  return {
-    title: 'PROJECT Risk',
-    defaultRiskValue,
-    risks,
-    scoreSubtotal: calculateRiskSubtotal(risks, defaultRiskValue)
+  const riskOverrides: RiskCategory = {
+    title: 'Manual Risk OVERRIDES',
+    defaultRiskValue: 0,
+    risks: [],
+    scoreSubtotal: 0
   };
+
+  const { trustedPubKeys, repoOverrides } = config.facts.override;
+
+  if (! trustedPubKeys.length || ! repoOverrides.length) {
+    return riskOverrides;
+  }
+
+  await importPublicKeys(trustedPubKeys);
+
+  for (const override of repoOverrides) {
+    checks.push(manualOverrideCheck(override));
+  }
+
+  // gather valid overrides
+  const overrides = await Promise.all(checks);
+
+  await removePublicKeyring();
+
+  riskOverrides.risks = overrides;
+  riskOverrides.scoreSubtotal = calculateRiskSubtotal(overrides, defaultRiskValue);
+
+  return riskOverrides;
 }
-*/
