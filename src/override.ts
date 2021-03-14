@@ -1,8 +1,8 @@
 import { formatRisk, runCmd } from './helpers';
 import { getConfig } from './config';
-import { Override, Config, OverrideFacts, RiskCategory, Risk } from './types';
+import { Override, Config, OverrideFacts, Risk } from './types';
 import * as fs from 'fs-extra';
-import { log, findFiles, isWorldWritable, calculateRiskSubtotal } from './helpers';
+import { log, findFiles, isWorldWritable } from './helpers';
 import path from 'path';
 
 const riskCategory = 'override';
@@ -167,36 +167,3 @@ export async function manualOverrideCheck(overrideFile: string, config: Config =
   }, riskCategory, check)
 }
 
-export async function gatherRiskOverrides(config: Config = getConfig()): Promise<RiskCategory> {
-  const checks: Promise<Risk>[] = [];
-  const defaultRiskValue = 0;
-
-  const riskOverrides: RiskCategory = {
-    title: 'Manual Risk OVERRIDES',
-    defaultRiskValue: 0,
-    risks: [],
-    scoreSubtotal: 0
-  };
-
-  const { trustedPubKeys, repoOverrides } = config.facts.override;
-
-  if (! trustedPubKeys.length || ! repoOverrides.length) {
-    return riskOverrides;
-  }
-
-  await importPublicKeys(trustedPubKeys);
-
-  for (const override of repoOverrides) {
-    checks.push(manualOverrideCheck(override));
-  }
-
-  // gather valid overrides
-  const overrides = await Promise.all(checks);
-
-  await removePublicKeyring();
-
-  riskOverrides.risks = overrides;
-  riskOverrides.scoreSubtotal = calculateRiskSubtotal(overrides, defaultRiskValue);
-
-  return riskOverrides;
-}

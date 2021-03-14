@@ -1,39 +1,10 @@
-import { RiskCategory, Risk, SCMFacts, MaybeString, Config, GitleaksMetrics } from './types';
-import { calculateRiskSubtotal, whereis, runCmd, formatRisk, findFiles } from './helpers';
+import { Risk, SCMFacts, MaybeString, Config, GitleaksMetrics } from './types';
+import { whereis, runCmd, formatRisk, findFiles } from './helpers';
 import { getConfig } from './config';
 import * as fs from 'fs-extra';
 import * as path from 'path';
 
 const riskCategory = 'scm';
-
-export async function gatherLocalSCMRisk(): Promise<RiskCategory> {
-  const checks: Promise<Risk>[] = [];
-  const defaultRiskValue = 5;
-
-  const config = getConfig();
-
-  // perform appropriate checks
-  checks.push(gitRepoDirCheck(config.flags.dir, config));
-
-  if (config.facts.scm.gitPath) {
-    checks.push(gitConfigGPGCheck());
-  }
-  if (config.facts.scm.gitPath && config.facts.scm.gpgPath) {
-    checks.push(gpgVerifyRecentCommitsCheck());
-  }
-
-  checks.push(gitleaksCheck(await parseGitleaksScan(config.facts.scm.scans.gitleaksScanReport)));
-
-  // gather risks
-  const risks = await Promise.all(checks);
-
-  return {
-    title: 'SCM Risk',
-    defaultRiskValue,
-    risks,
-    scoreSubtotal: calculateRiskSubtotal(risks, defaultRiskValue)
-  };
-}
 
 export async function gitRepoDirCheck(dir: string, config: Config = getConfig()): Promise<Risk> {
   const check = 'git';

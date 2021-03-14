@@ -1,10 +1,7 @@
 import {Command, flags} from '@oclif/command'
 import { getConfig, initConfig } from './config';
 import { redactConfig } from './helpers';
-import { gatherLocalSCMRisk } from './scm';
-import { gatherCodeRisk } from './code';
-import { gatherProjectRisk } from './project';
-import { gatherRiskOverrides } from './override';
+import * as gather from './gather';
 import { RiskCategory } from './types';
 import { log, getLogOutput } from './helpers';
 import { processOverrideCommand } from './processOverrideCLI';
@@ -47,10 +44,10 @@ class Peril extends Command {
 
     log('Analyzing risk factors...');
 
-    riskCategories.push(await gatherLocalSCMRisk());
-    riskCategories.push(await gatherCodeRisk());
-    riskCategories.push(await gatherProjectRisk());
-    riskCategories.push(await gatherRiskOverrides());
+    riskCategories.push(await gather.localSCMRisk());
+    riskCategories.push(await gather.codeRisk());
+    riskCategories.push(await gather.projectRisk());
+    riskCategories.push(await gather.riskOverrides());
 
     const riskTotal = Math.max(riskCategories.reduce((acc, c) => {
       acc += c.scoreSubtotal;

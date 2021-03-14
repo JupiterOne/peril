@@ -1,38 +1,10 @@
-import { Risk, RiskCategory, ShortStat, CodeFacts, MaybeString, DepScanFinding, Config } from './types';
-import { log, calculateRiskSubtotal, findFiles, runCmd, formatRisk } from './helpers';
+import { Risk, ShortStat, CodeFacts, MaybeString, DepScanFinding, Config } from './types';
+import { findFiles, runCmd, formatRisk } from './helpers';
 import { getConfig } from './config';
 import path from 'path';
 import * as fs from 'fs-extra';
 
 const riskCategory = 'code';
-
-export async function gatherCodeRisk(): Promise<RiskCategory> {
-  const config = getConfig();
-
-  // TODO: allow category risk config override
-  const defaultRiskValue = 0;
-  const checks: Promise<Risk>[] = [];
-
-  const gitStats = await getGitDiffStats(config.flags.mergeRef);
-
-  if (gitStats.filesChanged > 0) {
-    checks.push(locCheck(gitStats));
-    checks.push(filesChangedCheck(gitStats));
-  } else {
-    config.flags.verbose && log(`Couldn't retrieve git stats for HEAD..${config.flags.mergeRef}, skipping some checks.`, 'WARN');
-  }
-  checks.push(depScanCheck(await parseShiftLeftDepScan(config.facts.code.scans.depScanReport)));
-
-  // gather risks
-  const risks = await Promise.all(checks);
-
-  return {
-    title: 'CODE Risk',
-    defaultRiskValue,
-    risks,
-    scoreSubtotal: calculateRiskSubtotal(risks, defaultRiskValue)
-  };
-}
 
 export function parseGitDiffShortStat(shortStat: string): ShortStat {
   // expects input like:  9 files changed, 19 insertions(+), 49 deletions(-)
