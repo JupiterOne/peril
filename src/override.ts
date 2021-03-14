@@ -32,7 +32,6 @@ export async function validateOverride(override: Override, now: Date = new Date(
     log(`Ignoring expired override credit of ${override.credit}, expiry ${override.expires}.`, 'DEBUG');
     return false;
   }
-  // does the rootSHA match this repo?
   const rootSHA = await getRootSHA(cmdRunner);
   if (rootSHA !== override.rootSHA) {
     log(`Ignoring copy/paste override credit of ${override.credit}, signer ${override.signedBy}.`, 'DEBUG');
@@ -80,7 +79,7 @@ export async function validatePubKeys(keys: string[]): Promise<string[]> {
       if (!isWorldWritable(dirMode) && !isWorldWritable(keyMode)) {
         validPubKeys.push(key);
       } else {
-        log(`Pubkey ${key} is world writabile and cannot be trusted! Skipping...`);
+        log(`Pubkey ${key} is world writable and cannot be trusted! Skipping...`, 'WARN');
       }
     } catch (err) {
       log('Error accessing pubkey file or directory: ' + err);
@@ -144,7 +143,7 @@ export async function clearsign(data: any, cmdRunner: any = undefined): Promise<
   return res.stdout || '';
 }
 
-export async function manualOverrideCheck(overrideFile: string, config: Config = getConfig()): Promise<Risk> {
+export async function manualOverrideCheck(overrideFile: string): Promise<Risk> {
   const check = 'manual';
   const recommendations: string[] = [];
   const override = await parseOverride(overrideFile);
