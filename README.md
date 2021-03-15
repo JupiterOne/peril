@@ -33,15 +33,18 @@ USAGE
   $ peril
 
 OPTIONS
-  -V, --version            show CLI version
-  -c, --config=config      path to override config file
+  -V, --version            Show CLI version
+  -c, --config=config      Path to override config file
   -d, --dir=dir            [default: /Users/erichs/repos/jupiterone/peril] directory path to scan
-  -h, --help               show CLI help
-  -l, --log=log            path to output log file
-  -m, --mergeRef=mergeRef  [default: master] current git ref/tag of default branch (merge target)
-  -v, --verbose            enable verbose output
-  --accept                 accept all risk (do not exit with non-zero status)
-  --debug                  debug mode, very verbose
+  -h, --help               Show CLI help
+  -l, --log=log            Path to output log file
+  -m, --mergeRef=mergeRef  [default: master] Current git ref/tag of default branch (merge target)
+  -p, --pubkeyDir=pubkeyDir  Full path to directory containing trusted public GPG keys
+  -v, --verbose            Enable verbose output
+  --accept                 Accept all risk (do not exit with non-zero status)
+  --debug                  Debug mode, very verbose
+  --noBanner               Do not display splash banner
+  --override               Create a project override object
 ```
 
 ### Via Docker
@@ -134,3 +137,36 @@ Checks related to the Project (CodeRepo in JupiterOne).
 | `++`   | Requires the [Snyk integration](https://support.jupiterone.io/hc/en-us/articles/360024788554-Snyk) to be configured for JupiterOne. |
 | `@@`   | Will add risk if the CodeRepo entity in JupiterOne relates to overdue [`deferred_maintenance`](https://github.com/JupiterOne/deferred-maintenance/) items. |
 | `!!`   | Works with [OWASP Threat Dragon](http://docs.threatdragon.org/) models.
+
+## Manual Overrides
+
+From time-to-time, it may be necessary or desirable to override the risk calculations `peril` provides. Calling `peril --override` can be used locally to create an override object that may be committed to the `.peril/` folder of the target git repository.
+
+To use this feature, you will need to be a trusted staff member authorized by your business for this purpose. `peril` signs the override files with `gpg`, so your public key will need to be provisioned in advance in CI/CD. See "Trusting pubkeys" below.
+
+### Generating a local override
+
+1. Clone the target repo that is failing in CI/CD
+2. Check out the target branch.
+3. Issue `peril --override`
+4. Answer the interactive prompts.
+5. Commit the resulting file in the `.peril/` folder to git.
+6. Push this change to the remote target branch.
+
+### Trusting pubkeys in CI/CD
+
+Provision your trusted pubkeys in a directory (in binary format, via `gpg --export`) reachable by `peril` in CI/CD. This directory, and all pubkey files within it MUST NOT be world writable. To enable the override feature, you must invoke `peril` with the `--pubkeyDir` flag, and specify a full path to the trusted pubkey directory you've previously provisioned.
+
+For example, if your pubkeys are available in the `/usr/local/gpgkeys` directory of your CI/CD host, you should specify the following parameter:
+
+```sh-session
+--pubkeyDir /usr/local/gpgkeys
+```
+
+If using `peril` with `docker`, you will likely need to mount this folder into the container with the `-v` flag.
+
+e.g.:
+
+```sh-session
+docker run -v /usr/local/gpgkeys:/gpgkeys -v $PWD:/app -e 'J1_API_TOKEN=<token>' -e 'J1_ACCOUNT=<accountname>' jupiterone/peril peril --verbose --dir /app --pubkeyDir /gpgkeys
+```
