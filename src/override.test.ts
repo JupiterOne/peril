@@ -1,10 +1,11 @@
 import { getGPGIdentity, clearsign, getRootSHA, createOverride, importPublicKeys, gatherFacts, validateOverride, verifyOverrideSignature, parseOverride, validatePubKeys, removePublicKeyring } from './override';
 import { config } from '../test/fixtures/testConfig';
-import { before, cloneDeep } from 'lodash';
+import { cloneDeep } from 'lodash';
 import { Override } from './types';
 import { testOverride } from '../test/fixtures/testOverride';
 import path from 'path';
 import { getLogOutput } from './helpers';
+import * as fs from 'fs-extra';
 
 describe('override features', () => {
 
@@ -105,6 +106,10 @@ gpg:               imported: 1
     const konfig = cloneDeep(config);
     konfig.flags.pubkeyDir = path.join(__dirname, '../test/fixtures/gpgKeys');
     konfig.flags.dir = path.join(__dirname, '../test/fixtures');
+
+    const invalidKey = path.join(__dirname, '../test/fixtures/gpgKeys/invalid.gpg');
+    await fs.chmod(invalidKey, '777'); // world writable, hence invalid
+
     const facts = await gatherFacts(konfig);
     expect(facts.override.trustedPubKeysDir).toEqual(konfig.flags.pubkeyDir);
     expect(facts.override.trustedPubKeys.length).toEqual(2);
@@ -187,6 +192,7 @@ gpg:               imported: 1
 
   it('validatePubKeys returns [] if keys are world writable', async () => {
     const key = path.join(__dirname, '../test/fixtures/gpgKeys/invalid.gpg');
+    await fs.chmod(key, '777'); // world writable
     const validated = await validatePubKeys([key]);
     expect(validated).toEqual([]);
   });
