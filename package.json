@@ -1,7 +1,7 @@
 {
   "name": "@jupiterone/peril",
   "description": "Project Risk Analysis and Reporting Tool",
-  "version": "0.1.9",
+  "version": "0.2.0",
   "author": "JupiterOne <developer@jupiterone.com>",
   "repository": "jupiterone/project-risk-analyzer",
   "license": "MIT",
@@ -15,7 +15,7 @@
     "postbuild": "cp -R bin LICENSE assets dist/",
     "posttest": "yarn lint",
     "lint": "eslint --ext .ts,.tsx,.js,.jsx .",
-    "test": "jest"
+    "test": "jest --silent"
   },
   "dependencies": {
     "@jupiterone/data-model": "^0.16.3",
@@ -35,6 +35,7 @@
     "globby": "^11.0.1",
     "lodash": "^4.17.20",
     "memfs": "^3.2.0",
+    "prompts": "^2.4.0",
     "rimraf": "^3.0.2",
     "supports-ansi": "^1.0.6",
     "uuid": "^8.3.2"

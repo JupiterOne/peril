@@ -28,12 +28,16 @@ export function whereis(exe: string): string|undefined {
   return undefined;
 }
 
-export async function runCmd(cmd: string, execaCommand = execa.command, shell = false): Promise<execa.ExecaReturnValue | execa.ExecaReturnValue & Error> {
+export const execaCommand = execa.command;
+
+export async function runCmd(cmd: string, execaCommand = execa.command, options: any = { shell: false }): Promise<execa.ExecaReturnValue | execa.ExecaReturnValue & Error> {
   let res;
   const dir = get(getConfig(), 'flags.dir', process.cwd());  // respect dir flag if present
   try {
-  res = await execaCommand(cmd, { cwd: dir, shell });
+  res = await execaCommand(cmd, Object.assign(options, { cwd: dir }));
   } catch (e) {
+    // don't propagate exception here since execa Errors also
+    // contain ExecaReturnValue properties like failed, stderr, etc.
     return e;
   }
   return res;
@@ -98,4 +102,20 @@ export function log(msg: any, level: LogLevel = 'INFO', config: Config = getConf
 
 export function getLogOutput(): string {
   return logLines.join('\n');
+}
+
+export function epochDaysFromNow(days: number, now = Date.now()): number {
+  return now + days
+    * 24    // hours/day
+    * 60    // minutes/hour
+    * 60    // seconds/minute
+    * 1000; // millis/second
+    // What's 1000 times more awesome than a UNIX epoch?
+}
+
+export function isWorldWritable(mode: number): boolean {
+  const worldbit = mode & 0o0007; // isolate the final (world) octet of
+                                  // user  group  world
+                                  // rwx   rwx    rwx
+  return [7, 6, 3, 2].includes(worldbit);
 }

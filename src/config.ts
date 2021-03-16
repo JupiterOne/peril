@@ -4,6 +4,7 @@ import * as scm from './scm';
 import * as code from './code';
 import * as jupiterone  from './jupiterone';
 import * as project from './project';
+import * as override from './override';
 import * as fs from 'fs-extra';
 import path from 'path';
 import _ from 'lodash';
@@ -31,7 +32,8 @@ async function gatherAllFacts(): Promise<Facts> {
     ...await scm.gatherFacts(),
     ...await code.gatherFacts(),
     ...await jupiterone.gatherFacts(),
-    ...await project.gatherFacts()
+    ...await project.gatherFacts(),
+    ...await override.gatherFacts()
   };
 }
 
@@ -69,5 +71,9 @@ export async function gatherOptionalConfig(config: Config = getConfig(), readFil
 }
 
 export function getConfig(): Config {
+  if (process.env.NODE_ENV === 'test') {
+    // console.log('getConfig called during tests')
+    return require('../test/fixtures/testConfig').config;
+  }
   return config;
 }

@@ -1,5 +1,13 @@
 import { Risk } from './types';
-import { calculateRiskSubtotal, whereis, redactConfig, findFiles, log, getLogOutput } from './helpers';
+import {
+  calculateRiskSubtotal,
+  whereis,
+  redactConfig,
+  findFiles,
+  log,
+  getLogOutput,
+  epochDaysFromNow
+} from './helpers';
 import { config } from '../test/fixtures/testConfig'
 import { cloneDeep } from 'lodash';
 
@@ -73,5 +81,12 @@ describe('helpers', () => {
     expect(output).toMatch(/warntest/);
     expect(output).toMatch(/debugtest/);
     expect(output).toMatch(/errortest/);
+  });
+
+  it('epochDaysFromNow returns a future time (in days) as milliseconds since the UNIX epoch', () => {
+    const now = Date.parse('2021-03-08T19:49:03.770Z');
+    const thenEpoch = epochDaysFromNow(3, now);
+    const thenDate = new Date(thenEpoch);
+    expect(thenDate.getDate()).toBe(11);
   });
 });

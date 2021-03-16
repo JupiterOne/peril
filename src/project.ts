@@ -1,39 +1,11 @@
-import { RiskCategory, Risk, Config, SnykFinding, DeferredMaintenanceFinding, SortedFindings, ProjectFacts } from './types';
-import { log, formatRisk, calculateRiskSubtotal, findFiles } from './helpers';
+import { Risk, Config, SnykFinding, DeferredMaintenanceFinding, SortedFindings, ProjectFacts } from './types';
+import { log, formatRisk, findFiles } from './helpers';
 import { getConfig } from './config';
 import { get } from 'lodash';
 import fs from 'fs-extra';
 import path from 'path';
 
 const riskCategory = 'project';
-
-export async function gatherProjectRisk(config: Config = getConfig()): Promise<RiskCategory> {
-  const checks: Promise<Risk>[] = [];
-  const defaultRiskValue = 0;
-
-  const j1Client = config.facts.j1.client;
-  if (j1Client) {
-    const projectName = config.facts.project.name;
-    const findings = await j1Client.gatherEntities(`Find Finding that HAS CodeRepo with name='${projectName}'`);
-    const { snykFindings, maintenanceFindings, unknownFindings } = sortFindings(findings as any[]);
-    checks.push(codeRepoSnykFindingsCheck(snykFindings));
-    checks.push(codeRepoMaintenanceFindingsCheck(maintenanceFindings));
-    if (unknownFindings.length) {
-      log(`WARNING: ${projectName} CodeRepo has ${unknownFindings.length} Findings of unknown type. These do not currently contribute to risk scoring, but should be addressed.`, 'WARN');
-    }
-  }
-  checks.push(threatModelCheck());
-
-  // gather risks
-  const risks = await Promise.all(checks);
-
-  return {
-    title: 'PROJECT Risk',
-    defaultRiskValue,
-    risks,
-    scoreSubtotal: calculateRiskSubtotal(risks, defaultRiskValue)
-  };
-}
 
 export async function codeRepoMaintenanceFindingsCheck(
   findings: DeferredMaintenanceFinding[],

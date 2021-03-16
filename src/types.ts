@@ -49,7 +49,15 @@ export interface JupiterOneFacts {
   }
 }
 
-export type Facts = SCMFacts & CodeFacts & JupiterOneFacts & ProjectFacts;
+export interface OverrideFacts {
+  override: {
+    trustedPubKeysDir: MaybeString;
+    trustedPubKeys: string[];
+    repoOverrides: string[];
+  }
+}
+
+export type Facts = SCMFacts & CodeFacts & JupiterOneFacts & ProjectFacts & OverrideFacts;
 
 export interface Config {
   env: {
@@ -128,6 +136,8 @@ export interface Flags {
   config: string;
   debug: boolean;
   accept: boolean;
+  override: boolean;
+  pubkeyDir: string;
 }
 
 export interface ShortStat {
@@ -206,4 +216,13 @@ export interface LogLevelValues {
   warn: string;
   error: string;
   debug: string;
+}
+
+export interface Override {
+  signedBy: string;
+  exp: number;
+  expires: string;
+  rootSHA: string;
+  justification: string;
+  credit: number;
 }
