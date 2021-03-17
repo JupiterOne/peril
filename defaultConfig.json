@@ -2,17 +2,18 @@
   "riskTolerance": 20,
   "checks": {
     "code": {
-      "linesChanged" : {
+      "linesChanged": {
         "riskStep": 100,
         "riskValuePerStep": 1
       },
-      "filesChanged" : {
+      "filesChanged": {
         "riskStep": 20,
         "riskValuePerStep": 1
       },
-      "depscanFindings" : {
+      "depscanFindings": {
         "ignoreSeverityList": "INFO, LOW",
         "ignoreUnfixable": true,
+        "ignoreIndirects": true,
         "missingValue": 10,
         "noVulnerabilitiesCredit": -5
       }
