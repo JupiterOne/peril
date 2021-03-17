@@ -1,20 +1,34 @@
-import { getGPGIdentity, clearsign, getRootSHA, createOverride, importPublicKeys, gatherFacts, validateOverride, verifyOverrideSignature, parseOverride, validatePubKeys, removePublicKeyring } from './override';
-import { config } from '../test/fixtures/testConfig';
-import { cloneDeep } from 'lodash';
-import { Override } from './types';
-import { testOverride } from '../test/fixtures/testOverride';
-import path from 'path';
-import { getLogOutput } from './helpers';
 import * as fs from 'fs-extra';
+import { cloneDeep } from 'lodash';
+import path from 'path';
+import { config } from '../test/fixtures/testConfig';
+import { testOverride } from '../test/fixtures/testOverride';
+import { getLogOutput } from './helpers';
+import {
+  clearsign,
+  createOverride,
+  gatherFacts,
+  getGPGIdentity,
+  getRootSHA,
+  importPublicKeys,
+  parseOverride,
+  removePublicKeyring,
+  validateOverride,
+  validatePubKeys,
+  verifyOverrideSignature,
+} from './override';
+import { Override } from './types';
 
 describe('override features', () => {
-
-  const gpgIdRaw = 'uid:u::::14122::41ECEBA211::Some User <some.user@company.com>::::::::::0:';
+  const gpgIdRaw =
+    'uid:u::::14122::41ECEBA211::Some User <some.user@company.com>::::::::::0:';
   const gpgId = 'Some User <some.user@company.com>';
 
   it('getGPGIdentity parses gpg secret keys list output for identity', async () => {
     const mockRunCmd = jest.fn();
-    const id = await getGPGIdentity(mockRunCmd.mockResolvedValueOnce({ stdout: gpgIdRaw }));
+    const id = await getGPGIdentity(
+      mockRunCmd.mockResolvedValueOnce({ stdout: gpgIdRaw })
+    );
     expect(id).toEqual(gpgId);
   });
 
@@ -32,7 +46,11 @@ describe('override features', () => {
   });
 
   it('getGPGIdentity returns empty string when gpg lists no identifiable keys', async () => {
-    const mockRunCmd = jest.fn().mockResolvedValueOnce({ stdout: 'grp:::::::::9323654C065DA99813D377011A1:' });
+    const mockRunCmd = jest
+      .fn()
+      .mockResolvedValueOnce({
+        stdout: 'grp:::::::::9323654C065DA99813D377011A1:',
+      });
     const id = await getGPGIdentity(mockRunCmd);
     expect(id).toEqual('');
   });
@@ -51,8 +69,10 @@ nVfN9h4UoywyzONofymnOKdgxxVjbhuttkBztAujaolkeR8Uhp0XsNuBj3ARqKMM
 gopUr20+jOVMJiFRKq+AnHZ2rZ78BCPCcFv4xqImai0gAz/1K+nv4yPP80Al6KO+
 /11FVdBN381FaEGG5xeBgKThFyGBriSDbmP4EHpYersNa40/2wo=
 -----END PGP SIGNATURE-----`;
-    const mockRunCmd = jest.fn().mockResolvedValueOnce({ stdout: signedOutput, failed: false });
-    const sig = await clearsign({test: 'data'}, mockRunCmd);
+    const mockRunCmd = jest
+      .fn()
+      .mockResolvedValueOnce({ stdout: signedOutput, failed: false });
+    const sig = await clearsign({ test: 'data' }, mockRunCmd);
     expect(sig).toEqual(signedOutput);
   });
 
@@ -73,10 +93,16 @@ gopUr20+jOVMJiFRKq+AnHZ2rZ78BCPCcFv4xqImai0gAz/1K+nv4yPP80Al6KO+
   it('createOverride returns signable object', async () => {
     const justification = 'test override';
     const expiry = Date.now();
-    const mockRunCmd = jest.fn()
+    const mockRunCmd = jest
+      .fn()
       .mockResolvedValueOnce({ stdout: gpgIdRaw })
       .mockResolvedValueOnce({ stdout: rootSHA });
-    const override = await createOverride(-10, expiry, justification, mockRunCmd);
+    const override = await createOverride(
+      -10,
+      expiry,
+      justification,
+      mockRunCmd
+    );
     expect(override.credit).toBe(-10);
     expect(override.exp).toBe(expiry);
     expect(override.justification).toBe(justification);
@@ -85,18 +111,16 @@ gopUr20+jOVMJiFRKq+AnHZ2rZ78BCPCcFv4xqImai0gAz/1K+nv4yPP80Al6KO+
   });
 
   it('importPublicKeys imports all given keys', async () => {
-    const mockRunCmd = jest.fn()
-      .mockResolvedValue({stdout: `
+    const mockRunCmd = jest.fn().mockResolvedValue({
+      stdout: `
 gpg: keybox './somekeyring.gpg' created
 gpg: key C348A9E00AE60B1C: public key "Trusted User <trusted.user@corp.com>" imported
 gpg: Total number processed: 1
 gpg:               imported: 1
-`});
+`,
+    });
 
-    const keys = [
-      '/some/path/to/key1.gpg',
-      '/some/path/to/key2.gpg',
-    ];
+    const keys = ['/some/path/to/key1.gpg', '/some/path/to/key2.gpg'];
 
     await importPublicKeys(keys, mockRunCmd);
     expect(mockRunCmd).toHaveBeenCalledTimes(2);
@@ -107,7 +131,10 @@ gpg:               imported: 1
     konfig.flags.pubkeyDir = path.join(__dirname, '../test/fixtures/gpgKeys');
     konfig.flags.dir = path.join(__dirname, '../test/fixtures');
 
-    const invalidKey = path.join(__dirname, '../test/fixtures/gpgKeys/invalid.gpg');
+    const invalidKey = path.join(
+      __dirname,
+      '../test/fixtures/gpgKeys/invalid.gpg'
+    );
     await fs.chmod(invalidKey, '777'); // world writable, hence invalid
 
     const facts = await gatherFacts(konfig);
@@ -118,64 +145,86 @@ gpg:               imported: 1
 
   it('validateOverride returns false if Override is expired', async () => {
     const mockRunCmd = jest.fn();
-    const twoDaysAgo = Date.now() -  (2 * 24 * 60 * 60 * 1000); // in millis
+    const twoDaysAgo = Date.now() - 2 * 24 * 60 * 60 * 1000; // in millis
     const o: Override = {
       signedBy: 'some user',
       exp: twoDaysAgo,
       expires: new Date(twoDaysAgo).toString(),
       rootSHA: 'abcd',
       justification: 'test',
-      credit: -1
+      credit: -1,
     };
-    const isValid = await validateOverride(o, new Date(), mockRunCmd);
-    expect(isValid).toBe(false);
+    await expect(validateOverride(o, new Date(), mockRunCmd)).resolves.toBe(
+      false
+    );
   });
 
   it('validateOverride returns false if rootSHA does not match', async () => {
-    const mockRunCmd = jest.fn().mockResolvedValueOnce({ stdout: 'fedcba98766543210' });
-    const twoDaysFromNow = Date.now() +  (2 * 24 * 60 * 60 * 1000); // in millis
+    const mockRunCmd = jest
+      .fn()
+      .mockResolvedValueOnce({ stdout: 'fedcba98766543210' });
+    const twoDaysFromNow = Date.now() + 2 * 24 * 60 * 60 * 1000; // in millis
     const o: Override = {
       signedBy: 'some user',
       exp: twoDaysFromNow,
       expires: new Date(twoDaysFromNow).toString(),
       rootSHA: '0123456789abcdef',
       justification: 'test',
-      credit: -1
+      credit: -1,
     };
-    const isValid = await validateOverride(o, new Date(), mockRunCmd);
-    expect(isValid).toBe(false);
+    await expect(validateOverride(o, new Date(), mockRunCmd)).resolves.toBe(
+      false
+    );
   });
 
   it('validateOverride returns true if not expired and rootSHAs match', async () => {
     const rootSHA = 'a1b2c3d4e5f6543210';
     const mockRunCmd = jest.fn().mockResolvedValueOnce({ stdout: rootSHA });
-    const twoDaysFromNow = Date.now() +  (2 * 24 * 60 * 60 * 1000); // in millis
+    const twoDaysFromNow = Date.now() + 2 * 24 * 60 * 60 * 1000; // in millis
     const o: Override = {
       signedBy: 'some user',
       exp: twoDaysFromNow,
       expires: new Date(twoDaysFromNow).toString(),
       rootSHA,
       justification: 'test',
-      credit: -1
+      credit: -1,
     };
-    const isValid = await validateOverride(o, new Date(), mockRunCmd);
-    expect(isValid).toBe(true);
+    await expect(validateOverride(o, new Date(), mockRunCmd)).resolves.toBe(
+      true
+    );
   });
 
   it('verifyOverrideSignature returns true if .asc file can be GPG verified', async () => {
-    const mockRunCmd = jest.fn().mockResolvedValueOnce({ failed: false, stdout: '', stderr: 'Good signature from some user <some.user@corp.com>' });
-    const isValid = await verifyOverrideSignature('somefile.asc', mockRunCmd);
-    expect(isValid).toBe(true);
+    const mockRunCmd = jest
+      .fn()
+      .mockResolvedValueOnce({
+        failed: false,
+        stdout: '',
+        stderr: 'Good signature from some user <some.user@corp.com>',
+      });
+    await expect(
+      verifyOverrideSignature('somefile.asc', mockRunCmd)
+    ).resolves.toBe(true);
   });
 
   it('verifyOverrideSignature returns false if .asc file can NOT be GPG verified', async () => {
-    const mockRunCmd = jest.fn().mockResolvedValueOnce({ failed: true, stdout: '', stderr: 'ENOENT file not found' });
-    const isValid = await verifyOverrideSignature('someotherfile.asc', mockRunCmd);
-    expect(isValid).toBe(false);
+    const mockRunCmd = jest
+      .fn()
+      .mockResolvedValueOnce({
+        failed: true,
+        stdout: '',
+        stderr: 'ENOENT file not found',
+      });
+    await expect(
+      verifyOverrideSignature('someotherfile.asc', mockRunCmd)
+    ).resolves.toBe(false);
   });
 
   it('parseOverride returns parsed object from clearsigned file', async () => {
-    const oFile = path.join(__dirname, '../test/fixtures/.peril/override-until_2021-03-13T00:58:47.392Z.asc');
+    const oFile = path.join(
+      __dirname,
+      '../test/fixtures/.peril/override-until_2021-03-13T00:58:47.392Z.asc'
+    );
     const parsed = await parseOverride(oFile);
     expect(parsed).toEqual(testOverride);
   });
@@ -198,14 +247,18 @@ gpg:               imported: 1
   });
 
   it('importPublicKeys calls "gpg --import" for all provided keys', async () => {
-    const keys = [ 'one.gpg', 'two.gpg' ];
-    const mockRunCmd = jest.fn().mockResolvedValue({ failed: false, stdout: '' });
+    const keys = ['one.gpg', 'two.gpg'];
+    const mockRunCmd = jest
+      .fn()
+      .mockResolvedValue({ failed: false, stdout: '' });
     await importPublicKeys(keys, mockRunCmd);
     expect(mockRunCmd).toHaveBeenCalledTimes(2);
   });
 
   it('importPublicKeys logs failure if gpg is unable to import key', async () => {
-    const mockRunCmd = jest.fn().mockResolvedValueOnce({ failed: true, stderr: 'ENOENT' });
+    const mockRunCmd = jest
+      .fn()
+      .mockResolvedValueOnce({ failed: true, stderr: 'ENOENT' });
     const beforeOutput = getLogOutput();
     await importPublicKeys(['foo.gpg'], mockRunCmd);
     const afterOutput = getLogOutput();
@@ -213,9 +266,14 @@ gpg:               imported: 1
   });
 
   it('removePublicKeyring shells out to bash "rm" to cleanup keyring file', async () => {
-    const mockRunCmd = jest.fn().mockResolvedValueOnce({ failed: false, stdout: '' });
+    const mockRunCmd = jest
+      .fn()
+      .mockResolvedValueOnce({ failed: false, stdout: '' });
     await removePublicKeyring(mockRunCmd);
     expect(mockRunCmd).toHaveBeenCalledTimes(1);
-    expect(mockRunCmd).toHaveBeenCalledWith(expect.stringMatching(/rm .+/), expect.objectContaining({shell: true}));
+    expect(mockRunCmd).toHaveBeenCalledWith(
+      expect.stringMatching(/rm .+/),
+      expect.objectContaining({ shell: true })
+    );
   });
 });

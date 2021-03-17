@@ -9,16 +9,16 @@
 
 Project Risk Analysis and Reporting Tool
 
-This is a standalone CLI tool intended to analyze the overall risk profile
-for the currently-checked-out branch of a code repository. It will draw risk
+This is a standalone CLI tool intended to analyze the overall risk profile for
+the currently-checked-out branch of a code repository. It will draw risk
 information from a configurable list of sources, including JupiterOne, before
 rendering an overall risk verdict for the code.
 
 Use-cases include:
 
-* CI/CD gates
-* Local development and remediation
-* Security analysis and code review
+- CI/CD gates
+- Local development and remediation
+- Security analysis and code review
 
 ## Usage
 
@@ -57,16 +57,17 @@ docker run -v $PWD:/app -e 'J1_API_TOKEN=<token>' -e 'J1_ACCOUNT=<accountname>' 
 
 `peril` assumes that:
 
-* You are using `git`.
-* The present working directory is the top-level of the git project to be analyzed, or the `--dir` flag points to this top-level.
+- You are using `git`.
+- The present working directory is the top-level of the git project to be
+  analyzed, or the `--dir` flag points to this top-level.
 
 ## Risk Scores
 
 The Risk scores that `peril` produces are arbitrary. A more structured
 calculation--the
 [DREAD](https://en.wikipedia.org/wiki/DREAD_%28risk_assessment_model%29)
-model--was considered but abandoned since that model lacks academic rigor and
-is difficult to apply in a consistent fashion that produces sensible results.
+model--was considered but abandoned since that model lacks academic rigor and is
+difficult to apply in a consistent fashion that produces sensible results.
 Instead, `peril` takes the position that since risk evaluation will always be
 subjective, the values it uses should be inherently arbitrary and easily
 configured for tuning purposes (see below). It is recommended to run `peril`
@@ -80,8 +81,8 @@ tightly with the configured checks/practices.
 
 `peril` ships with default risk values out-of-the-box, but these are all
 configurable. You may override any of the values or facts found in the
-`./test/fixtures/testConfig.ts` file, in JSON format, and specify a path to
-your local config.json override with the `-c` | `--config` flag, e.g.:
+`./test/fixtures/testConfig.ts` file, in JSON format, and specify a path to your
+local config.json override with the `-c` | `--config` flag, e.g.:
 
 ```shell
 peril --config ./path/to/my/config.json
@@ -90,8 +91,8 @@ peril --config ./path/to/my/config.json
 NOTE: it is assumed that this override config file is trusted, and the code
 `peril` is analyzing does not have permissions to write or modify this file!
 
-Additionally, you may provide custom configuration via an executable script
-or program that emits JSON on stdout. The path to this executable may also be
+Additionally, you may provide custom configuration via an executable script or
+program that emits JSON on stdout. The path to this executable may also be
 specified with the `--config` flag. An example script may be found at
 `./test/fixtures/testConfig.sh`. Please ensure that the permissions to this
 script or program are locked down prior to invoking with `peril --config`!
@@ -102,47 +103,53 @@ script or program are locked down prior to invoking with `peril --config`!
 
 Checks related to Git SCM:
 
-| Check | Config Path | Notes |
-| ----- | ----------- | ----- |
-| git   | values.checks.scm.git | I think we can all agree code should be versioned. |
-| enforceGpg | values.checks.scm.enforceGpg | Encourage code-signing at the repo-level. |
-| verifyGpg | values.checks.scm.verifyGpg | Ensure recent commits have been signed. |
+| Check            | Config Path                        | Notes                                                               |
+| ---------------- | ---------------------------------- | ------------------------------------------------------------------- |
+| git              | values.checks.scm.git              | I think we can all agree code should be versioned.                  |
+| enforceGpg       | values.checks.scm.enforceGpg       | Encourage code-signing at the repo-level.                           |
+| verifyGpg        | values.checks.scm.verifyGpg        | Ensure recent commits have been signed.                             |
 | gitleaksFindings | values.checks.scm.gitleaksFindings | Committing sensitive data to git is an information disclosure risk. |
 
 ### CODE
 
 Checks related to the code being analyzed.
 
-| Check | Config Path | Notes |
-| ----- | ----------- | ----- |
-| linesChanged | values.checks.code.linesChanged | Large PRs represent a strain on code reviewers, and increase risk of rubber-stamping. |
-| filesChanged | values.checks.code.filesChanged | Large PRs represent a strain on code reviewers, and increase risk of rubber-stamping. |
-| depscanFindings | values.checks.code.depscanFindings | 3rd-party dependency vulnerabilities represent a supply-chain risk. `**` |
+| Check           | Config Path                        | Notes                                                                                 |
+| --------------- | ---------------------------------- | ------------------------------------------------------------------------------------- |
+| linesChanged    | values.checks.code.linesChanged    | Large PRs represent a strain on code reviewers, and increase risk of rubber-stamping. |
+| filesChanged    | values.checks.code.filesChanged    | Large PRs represent a strain on code reviewers, and increase risk of rubber-stamping. |
+| depscanFindings | values.checks.code.depscanFindings | 3rd-party dependency vulnerabilities represent a supply-chain risk. `**`              |
 
 ### PROJECT
 
 Checks related to the Project (CodeRepo in JupiterOne).
 
-| Check | Config Path | Notes |
-| ----- | ----------- | ----- |
-| snykFindings | values.checks.project.snykFindings | 3rd-party dependency vulnerabilities represent a supply-chain risk. `++`
-| maintenanceFindings | values.checks.project.maintenanceFindings | Overdue maintenance represents organizational risk. `@@`
-| threatModels | values.checks.project.threatModels | Encourage threat modeling activities. Add risk for unmitigated design flaws. `!!`
+| Check               | Config Path                               | Notes                                                                             |
+| ------------------- | ----------------------------------------- | --------------------------------------------------------------------------------- |
+| snykFindings        | values.checks.project.snykFindings        | 3rd-party dependency vulnerabilities represent a supply-chain risk. `++`          |
+| maintenanceFindings | values.checks.project.maintenanceFindings | Overdue maintenance represents organizational risk. `@@`                          |
+| threatModels        | values.checks.project.threatModels        | Encourage threat modeling activities. Add risk for unmitigated design flaws. `!!` |
 
 #### Legend
 
-| Symbol | Meaning |
-| ------ | ------- |
-| `**`   | Requires local use of [ShiftLeft/sast-scan](https://github.com/ShiftLeftSecurity/sast-scan/) prior to invoking `peril`. |
-| `++`   | Requires the [Snyk integration](https://support.jupiterone.io/hc/en-us/articles/360024788554-Snyk) to be configured for JupiterOne. |
+| Symbol | Meaning                                                                                                                                                    |
+| ------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `**`   | Requires local use of [ShiftLeft/sast-scan](https://github.com/ShiftLeftSecurity/sast-scan/) prior to invoking `peril`.                                    |
+| `++`   | Requires the [Snyk integration](https://support.jupiterone.io/hc/en-us/articles/360024788554-Snyk) to be configured for JupiterOne.                        |
 | `@@`   | Will add risk if the CodeRepo entity in JupiterOne relates to overdue [`deferred_maintenance`](https://github.com/JupiterOne/deferred-maintenance/) items. |
-| `!!`   | Works with [OWASP Threat Dragon](http://docs.threatdragon.org/) models.
+| `!!`   | Works with [OWASP Threat Dragon](http://docs.threatdragon.org/) models.                                                                                    |
 
 ## Manual Overrides
 
-From time-to-time, it may be necessary or desirable to override the risk calculations `peril` provides. Calling `peril --override` can be used locally to create an override object that may be committed to the `.peril/` folder of the target git repository.
+From time-to-time, it may be necessary or desirable to override the risk
+calculations `peril` provides. Calling `peril --override` can be used locally to
+create an override object that may be committed to the `.peril/` folder of the
+target git repository.
 
-To use this feature, you will need to be a trusted staff member authorized by your business for this purpose. `peril` signs the override files with `gpg`, so your public key will need to be provisioned in advance in CI/CD. See "Trusting pubkeys" below.
+To use this feature, you will need to be a trusted staff member authorized by
+your business for this purpose. `peril` signs the override files with `gpg`, so
+your public key will need to be provisioned in advance in CI/CD. See "Trusting
+pubkeys" below.
 
 ### Generating a local override
 
@@ -155,15 +162,21 @@ To use this feature, you will need to be a trusted staff member authorized by yo
 
 ### Trusting pubkeys in CI/CD
 
-Provision your trusted pubkeys in a directory (in binary format, via `gpg --export`) reachable by `peril` in CI/CD. This directory, and all pubkey files within it MUST NOT be world writable. To enable the override feature, you must invoke `peril` with the `--pubkeyDir` flag, and specify a full path to the trusted pubkey directory you've previously provisioned.
+Provision your trusted pubkeys in a directory (in binary format, via
+`gpg --export`) reachable by `peril` in CI/CD. This directory, and all pubkey
+files within it MUST NOT be world writable. To enable the override feature, you
+must invoke `peril` with the `--pubkeyDir` flag, and specify a full path to the
+trusted pubkey directory you've previously provisioned.
 
-For example, if your pubkeys are available in the `/usr/local/gpgkeys` directory of your CI/CD host, you should specify the following parameter:
+For example, if your pubkeys are available in the `/usr/local/gpgkeys` directory
+of your CI/CD host, you should specify the following parameter:
 
 ```sh-session
 --pubkeyDir /usr/local/gpgkeys
 ```
 
-If using `peril` with `docker`, you will likely need to mount this folder into the container with the `-v` flag.
+If using `peril` with `docker`, you will likely need to mount this folder into
+the container with the `-v` flag.
 
 e.g.:
 

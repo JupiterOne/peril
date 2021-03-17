@@ -5,7 +5,7 @@ export const config: Config = {
     j1AuthToken: 'REDACTED',
     j1Account: 'j1test',
     logLevel: 'info',
-    threatDragonDir: 'ThreatDragonModels'
+    threatDragonDir: 'ThreatDragonModels',
   },
   flags: {
     verbose: true,
@@ -13,7 +13,9 @@ export const config: Config = {
     mergeRef: 'master',
     config: '/Users/test/repos/jupiterone/peril/testConfig.json',
     debug: false,
-    accept: false
+    accept: false,
+    override: false,
+    pubkeyDir: '',
   },
   facts: {
     scm: {
@@ -23,20 +25,27 @@ export const config: Config = {
       gitPath: '/usr/local/bin/git',
       gpgPath: '/usr/local/bin/gpg',
       scans: {
-        gitleaksScanReport: '/Users/test/repos/jupiterone/peril/reports/credscan-report.sarif'
-      }
+        gitleaksScanReport:
+          '/Users/test/repos/jupiterone/peril/reports/credscan-report.sarif',
+      },
     },
     code: {
       scans: {
-        depScanReport: '/Users/test/repos/jupiterone/peril/reports/depscan-report-nodejs.json'
-      }
+        depScanReport:
+          '/Users/test/repos/jupiterone/peril/reports/depscan-report-nodejs.json',
+      },
     },
     j1: {},
     project: {
-      threatDragonModels: [ __dirname + '/threatDragon.json' ],
+      threatDragonModels: [__dirname + '/threatDragon.json'],
       threatDragonModelsDir: 'ThreatDragonModels',
-      name: 'peril'
-    }
+      name: 'peril',
+    },
+    override: {
+      trustedPubKeysDir: '',
+      trustedPubKeys: [],
+      repoOverrides: [],
+    },
   },
   values: {
     riskTolerance: 20,
@@ -44,50 +53,51 @@ export const config: Config = {
       code: {
         linesChanged: {
           riskStep: 100,
-          riskValuePerStep: 1
+          riskValuePerStep: 1,
         },
         filesChanged: {
           riskStep: 20,
-          riskValuePerStep: 1
+          riskValuePerStep: 1,
         },
         depscanFindings: {
           ignoreSeverityList: 'INFO, LOW',
           ignoreUnfixable: true,
+          ignoreIndirects: true,
           missingValue: 10,
-          noVulnerabilitiesCredit: 0
-        }
+          noVulnerabilitiesCredit: 0,
+        },
       },
       scm: {
         git: {
-          missingValue: 5
+          missingValue: 5,
         },
         enforceGpg: {
-          missingValue: 0.5
+          missingValue: 0.5,
         },
         verifyGpg: {
-          missingValue: 0.5
+          missingValue: 0.5,
         },
         gitleaksFindings: {
-          perFindingValue: 10
-        }
+          perFindingValue: 10,
+        },
       },
       project: {
         snykFindings: {
-          ignoreNonUpgradables: true
+          ignoreNonUpgradables: true,
         },
         maintenanceFindings: {
           daysLateRiskStep: 10,
-          daysLateRiskValuePerStep: 5
+          daysLateRiskValuePerStep: 5,
         },
         threatModels: {
-         enabled: true,
-         highRiskValue: 10,
-         mediumRiskValue: 5,
-         lowRiskValue: 1,
-         allMitigatedCredit: -3,
-         missingValue: 5
-      }
-      }
-    }
-  }
-}
+          enabled: true,
+          highRiskValue: 10,
+          mediumRiskValue: 5,
+          lowRiskValue: 1,
+          allMitigatedCredit: -3,
+          missingValue: 5,
+        },
+      },
+    },
+  },
+};

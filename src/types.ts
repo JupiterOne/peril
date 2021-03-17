@@ -23,16 +23,16 @@ export interface SCMFacts {
     gpgPath: MaybeString;
     scans: {
       gitleaksScanReport: MaybeString;
-    }
-  }
+    };
+  };
 }
 
 export interface CodeFacts {
   code: {
     scans: {
       depScanReport: MaybeString;
-    }
-  }
+    };
+  };
 }
 
 export interface ProjectFacts {
@@ -40,13 +40,13 @@ export interface ProjectFacts {
     name: MaybeString;
     threatDragonModels: MaybeString[];
     threatDragonModelsDir: string;
-  }
+  };
 }
 
 export interface JupiterOneFacts {
   j1: {
     client?: J1Client;
-  }
+  };
 }
 
 export interface OverrideFacts {
@@ -54,10 +54,14 @@ export interface OverrideFacts {
     trustedPubKeysDir: MaybeString;
     trustedPubKeys: string[];
     repoOverrides: string[];
-  }
+  };
 }
 
-export type Facts = SCMFacts & CodeFacts & JupiterOneFacts & ProjectFacts & OverrideFacts;
+export type Facts = SCMFacts &
+  CodeFacts &
+  JupiterOneFacts &
+  ProjectFacts &
+  OverrideFacts;
 
 export interface Config {
   env: {
@@ -69,56 +73,57 @@ export interface Config {
   flags: Flags;
   facts: Facts;
   values: {
-    checks: SCMValues & CodeValues & ProjectValues
+    checks: SCMValues & CodeValues & ProjectValues;
     riskTolerance: number;
-  }
+  };
 }
 
 export interface SCMValues {
   scm: {
     git: {
       missingValue: number;
-    },
+    };
     enforceGpg: {
       missingValue: number;
-    },
+    };
     verifyGpg: {
       missingValue: number;
-    },
+    };
     gitleaksFindings: {
       perFindingValue: number;
-    }
-  }
+    };
+  };
 }
 
 export interface CodeValues {
   code: {
-    linesChanged : {
+    linesChanged: {
       riskStep: number;
       riskValuePerStep: number;
-    },
-    filesChanged : {
+    };
+    filesChanged: {
       riskStep: number;
       riskValuePerStep: number;
-    },
-    depscanFindings : {
+    };
+    depscanFindings: {
       ignoreSeverityList: string;
       ignoreUnfixable: boolean;
+      ignoreIndirects: boolean;
       missingValue: number;
       noVulnerabilitiesCredit: number;
-    }
-  }
+    };
+  };
 }
 
 export interface ProjectValues {
   project: {
     snykFindings: {
       ignoreNonUpgradables: boolean;
-    },
+    };
     maintenanceFindings: {
       daysLateRiskStep: number;
       daysLateRiskValuePerStep: number;
-    },
+    };
     threatModels: {
       enabled: boolean;
       highRiskValue: number;
@@ -126,8 +131,8 @@ export interface ProjectValues {
       lowRiskValue: number;
       allMitigatedCredit: number;
       missingValue: number;
-    }
-  }
+    };
+  };
 }
 export interface Flags {
   verbose: boolean;
@@ -143,8 +148,8 @@ export interface Flags {
 export interface ShortStat {
   filesChanged: number;
   linesAdded: number;
-  linesRemoved: number
-};
+  linesRemoved: number;
+}
 
 export type CodeRepoFinding = SnykFinding | DeferredMaintenanceFinding;
 
@@ -156,8 +161,8 @@ export interface SortedFindings {
 
 export interface DeferredMaintenanceFinding {
   entity: {
-    _type: string[]
-  },
+    _type: string[];
+  };
   properties: {
     weblink: string;
     dueDate: string;
@@ -166,13 +171,13 @@ export interface DeferredMaintenanceFinding {
     createdBy: string;
     closed: boolean;
     lapsedDays?: number;
-  }
+  };
 }
 
 export interface SnykFinding {
   entity: {
-    _type: string[]
-  },
+    _type: string[];
+  };
   properties: {
     category: string;
     score: number;
@@ -187,7 +192,7 @@ export interface SnykFinding {
     severity: string;
     package: string;
     version: string;
-  }
+  };
 }
 
 export interface DepScanFinding {
@@ -209,7 +214,7 @@ export interface GitleaksMetrics {
   low: number;
 }
 
-export type LogLevel = 'INFO' | 'WARN' | 'ERROR' | 'DEBUG'
+export type LogLevel = 'INFO' | 'WARN' | 'ERROR' | 'DEBUG';
 
 export interface LogLevelValues {
   info: string;
