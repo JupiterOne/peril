@@ -80,36 +80,48 @@ export type Config = {
 
 export type SCMValues = {
   scm: {
-    git: {
-      missingValue: number;
-    };
-    enforceGpg: {
-      missingValue: number;
-    };
-    verifyGpg: {
-      missingValue: number;
-    };
-    gitleaksFindings: {
-      perFindingValue: number;
-    };
+    git: SCMValuesGitCheck;
+    enforceGpg: SCMValuesEnforceGPGCheck;
+    verifyGpg: SCMValuesVerifyGPGCheck;
+    gitleaksFindings: SCMValuesGitleaksFindingsCheck;
   };
+};
+
+export type SCMValuesEnforceGPGCheck = {
+  missingValue: number;
+};
+
+export type SCMValuesVerifyGPGCheck = {
+  missingValue: number;
+};
+
+export type SCMValuesGitleaksFindingsCheck = {
+  perFindingValue: number;
+};
+
+export type SCMValuesGitCheck = {
+  missingValue: number;
 };
 
 export type CodeValues = {
   code: {
-    linesChanged: {
-      riskStep: number;
-      riskValuePerStep: number;
-    };
+    linesChanged: CodeValuesLinesChangedCheck;
     filesChanged: CodeValuesFileChangedCheck;
-    depscanFindings: {
-      ignoreSeverityList: string;
-      ignoreUnfixable: boolean;
-      ignoreIndirects: boolean;
-      missingValue: number;
-      noVulnerabilitiesCredit: number;
-    };
+    depscanFindings: CodeValuesDepScanCheck;
   };
+};
+
+export type CodeValuesDepScanCheck = {
+  ignoreSeverityList: string;
+  ignoreUnfixable: boolean;
+  ignoreIndirects: boolean;
+  missingValue: number;
+  noVulnerabilitiesCredit: number;
+};
+
+export type CodeValuesLinesChangedCheck = {
+  riskStep: number;
+  riskValuePerStep: number;
 };
 
 export type CodeValuesFileChangedCheck = {
@@ -119,23 +131,30 @@ export type CodeValuesFileChangedCheck = {
 
 export type ProjectValues = {
   project: {
-    snykFindings: {
-      ignoreNonUpgradables: boolean;
-    };
-    maintenanceFindings: {
-      daysLateRiskStep: number;
-      daysLateRiskValuePerStep: number;
-    };
-    threatModels: {
-      enabled: boolean;
-      highRiskValue: number;
-      mediumRiskValue: number;
-      lowRiskValue: number;
-      allMitigatedCredit: number;
-      missingValue: number;
-    };
+    snykFindings: ProjectValuesSnykFindingsCheck;
+    maintenanceFindings: ProjectValuesMaintenanceFindingsCheck;
+    threatModels: ProjectValuesThreatModelsCheck;
   };
 };
+
+export type ProjectValuesSnykFindingsCheck = {
+  ignoreNonUpgradables: boolean;
+};
+
+export type ProjectValuesMaintenanceFindingsCheck = {
+  daysLateRiskStep: number;
+  daysLateRiskValuePerStep: number;
+};
+
+export type ProjectValuesThreatModelsCheck = {
+  enabled: boolean;
+  highRiskValue: number;
+  mediumRiskValue: number;
+  lowRiskValue: number;
+  allMitigatedCredit: number;
+  missingValue: number;
+};
+
 export type Flags = {
   verbose: boolean;
   dir: string;

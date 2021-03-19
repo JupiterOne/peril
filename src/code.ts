@@ -4,6 +4,9 @@ import { getConfig } from './config';
 import { findFiles, formatRisk, runCmd } from './helpers';
 import {
   CodeFacts,
+  CodeValuesDepScanCheck,
+  CodeValuesFileChangedCheck,
+  CodeValuesLinesChangedCheck,
   Config,
   DepScanFinding,
   MaybeString,
@@ -63,7 +66,7 @@ export async function getGitDiffStats(
 
 export async function locCheck(
   gitStats: ShortStat,
-  config: Config = getConfig()
+  checkValues: CodeValuesLinesChangedCheck
 ): Promise<Risk> {
   const check = 'linesChanged';
   const recommendations: string[] = [];
@@ -72,12 +75,10 @@ export async function locCheck(
   // Code is a liability. Therefore deletions actually represent (on average), negative risk.
   const netChangedLOC =
     (gitStats.linesAdded || 0) - (gitStats.linesRemoved || 0);
-  const riskLOCStep = config.values.checks.code.linesChanged.riskStep;
-  const riskValuePerStep =
-    config.values.checks.code.linesChanged.riskValuePerStep;
 
   // scale net changed lines (which may be negative) by a configurable ratio to determine risk value
-  const value = netChangedLOC * (riskValuePerStep / riskLOCStep);
+  const value =
+    netChangedLOC * (checkValues.riskValuePerStep / checkValues.riskStep);
 
   if (value > 10) {
     recommendations.push(
@@ -99,18 +100,16 @@ export async function locCheck(
 
 export async function filesChangedCheck(
   gitStats: ShortStat,
-  config: Config = getConfig()
+  checkValues: CodeValuesFileChangedCheck
 ): Promise<Risk> {
   const check = 'filesChanged';
   const recommendations: string[] = [];
   // Simple linear model for increased risk due to many files changed (therefore hard to review/reason about).
 
-  const riskFilesStep = config.values.checks.code.filesChanged.riskStep;
-  const riskValuePerStep =
-    config.values.checks.code.filesChanged.riskValuePerStep;
-
   // scale changed files by a configurable ratio to determine risk value
-  const value = gitStats.filesChanged * (riskValuePerStep / riskFilesStep);
+  const value =
+    gitStats.filesChanged *
+    (checkValues.riskValuePerStep / checkValues.riskStep);
 
   if (value > 10) {
     recommendations.push(
@@ -132,7 +131,7 @@ export async function filesChangedCheck(
 
 export async function depScanCheck(
   findings: DepScanFinding[],
-  config: Config = getConfig()
+  checkValues: CodeValuesDepScanCheck
 ): Promise<Risk> {
   const check = 'depscanFindings';
   const recommendations: string[] = [];
@@ -142,7 +141,7 @@ export async function depScanCheck(
     ignoreUnfixable,
     ignoreIndirects,
     noVulnerabilitiesCredit,
-  } = config.values.checks.code.depscanFindings;
+  } = checkValues;
 
   if (!findings.length) {
     recommendations.push(

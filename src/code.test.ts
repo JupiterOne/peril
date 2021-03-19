@@ -11,6 +11,12 @@ import {
 } from './code';
 import { ShortStat } from './types';
 
+const {
+  depscanFindings,
+  linesChanged,
+  filesChanged,
+} = config.values.checks.code;
+
 describe('code risks', () => {
   it('parseGitDiffShortStat parses git diff stats for numeric values', () => {
     const parsedOutput = parseGitDiffShortStat(
@@ -53,14 +59,14 @@ describe('code risks', () => {
       linesAdded: 100,
       linesRemoved: 0,
     };
-    const risk = await locCheck(stats1, config);
+    const risk = await locCheck(stats1, linesChanged);
     expect(risk.value).toEqual(1);
     const stats2: ShortStat = {
       filesChanged: 1,
       linesAdded: 300,
       linesRemoved: 150,
     };
-    const risk2 = await locCheck(stats2, config);
+    const risk2 = await locCheck(stats2, linesChanged);
     expect(risk2.value).toEqual(1.5);
   });
 
@@ -70,14 +76,14 @@ describe('code risks', () => {
       linesAdded: 100,
       linesRemoved: 100,
     };
-    const risk = await filesChangedCheck(stats1, config);
+    const risk = await filesChangedCheck(stats1, filesChanged);
     expect(risk.value).toEqual(0.5);
     const stats2: ShortStat = {
       filesChanged: 40,
       linesAdded: 300,
       linesRemoved: 150,
     };
-    const risk2 = await filesChangedCheck(stats2, config);
+    const risk2 = await filesChangedCheck(stats2, filesChanged);
     expect(risk2.value).toEqual(2);
   });
 
@@ -104,21 +110,21 @@ describe('code risks', () => {
   });
 
   it('depScanCheck penalizes for missing scans', async () => {
-    const missingScanRisk = await depScanCheck([], config);
+    const missingScanRisk = await depScanCheck([], depscanFindings);
     expect(missingScanRisk.value).toBeGreaterThanOrEqual(1);
   });
 
   it('depScanCheck ignores risk for <MEDIUM severity or unfixable findings', async () => {
-    const konfig = cloneDeep(config);
-    konfig.values.checks.code.depscanFindings.ignoreIndirects = false;
+    const konfig = cloneDeep(depscanFindings);
+    konfig.ignoreIndirects = false;
     const risk = await depScanCheck(depScanFindings, konfig);
     expect(risk.value).toEqual(7.5);
     expect(risk.description).toMatch(/1 HIGH/);
   });
 
   it('depScanCheck ignores risk for optional/indirect findings if ignoreIndirects is set', async () => {
-    const konfig = cloneDeep(config);
-    konfig.values.checks.code.depscanFindings.ignoreIndirects = true;
+    const konfig = cloneDeep(depscanFindings);
+    konfig.ignoreIndirects = true;
     const risk = await depScanCheck(depScanFindings, konfig);
     expect(risk.value).toEqual(0);
     expect(risk.description).toMatch(/None/);

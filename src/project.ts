@@ -1,65 +1,85 @@
-import { Risk, Config, SnykFinding, DeferredMaintenanceFinding, SortedFindings, ProjectFacts } from './types';
-import { log, formatRisk, findFiles } from './helpers';
-import { getConfig } from './config';
-import { get } from 'lodash';
 import fs from 'fs-extra';
+import { get } from 'lodash';
 import path from 'path';
+import { getConfig } from './config';
+import { findFiles, formatRisk, log } from './helpers';
+import {
+  Config,
+  DeferredMaintenanceFinding,
+  ProjectFacts,
+  ProjectValuesMaintenanceFindingsCheck,
+  ProjectValuesSnykFindingsCheck,
+  ProjectValuesThreatModelsCheck,
+  Risk,
+  SnykFinding,
+  SortedFindings,
+} from './types';
 
 const riskCategory = 'project';
 
 export async function codeRepoMaintenanceFindingsCheck(
   findings: DeferredMaintenanceFinding[],
-  config: Config = getConfig(),
-  now: Date = new Date()
+  checkValues: ProjectValuesMaintenanceFindingsCheck,
+  now: Date = new Date(),
+  facts = getConfig().facts
 ): Promise<Risk> {
   const check = 'deferredMaintenanceFindings';
   const recommendations: string[] = [];
 
-  const validFindings = findings.filter(f => {
-    const {closed, dueDate } = f.properties;
+  const validFindings = findings.filter((f) => {
+    const { closed, dueDate } = f.properties;
     if (closed) {
-      return false;        // ignore previously closed findings
+      return false; // ignore previously closed findings
     }
-    const lapsedTime = now.getTime() - (new Date(dueDate).getTime());
+    const lapsedTime = now.getTime() - new Date(dueDate).getTime();
     const lapsedDays = lapsedTime / 1000 / 60 / 60 / 24.0;
     f.properties.lapsedDays = lapsedDays;
     return lapsedTime > 0; // ignore risk for maintenance within deferral period
   });
 
-  const daysLateRiskStep = config.values.checks.project.maintenanceFindings.daysLateRiskStep;
-  const daysLateRiskValuePerStep = config.values.checks.project.maintenanceFindings.daysLateRiskValuePerStep;
+  const { daysLateRiskStep, daysLateRiskValuePerStep } = checkValues;
   const value = validFindings.reduce((acc, f) => {
     // risk is valuePerStep for every riskStep number of days late
-    acc += (f.properties.lapsedDays || 0) / (daysLateRiskStep / daysLateRiskValuePerStep);
+    acc +=
+      (f.properties.lapsedDays || 0) /
+      (daysLateRiskStep / daysLateRiskValuePerStep);
     return acc;
   }, 0);
 
   if (validFindings.length) {
     let link = '';
-    if (config.facts.j1.client) {
-      link = await config.facts.j1.client.getQueryUrl(`Find deferred_maintenance with closed=false that HAS CodeRepo with name="${config.facts.project.name}" return TREE`);
+    if (facts.j1.client) {
+      link = await facts.j1.client.getQueryUrl(
+        `Find deferred_maintenance with closed=false that HAS CodeRepo with name="${facts.project.name}" return TREE`
+      );
     }
-    recommendations.push('Resolve and close open deferred_maintenance Findings. ' + link);
+    recommendations.push(
+      'Resolve and close open deferred_maintenance Findings. ' + link
+    );
   }
 
-  return formatRisk({
-    check,
-    description: `${validFindings.length} past due maintenance items`,
-    value,
-    recommendations
-  }, riskCategory, check);
-
+  return formatRisk(
+    {
+      check,
+      description: `${validFindings.length} past due maintenance items`,
+      value,
+      recommendations,
+    },
+    riskCategory,
+    check
+  );
 }
 
 export async function codeRepoSnykFindingsCheck(
   findings: SnykFinding[],
-  config: Config = getConfig()
+  checkValues: ProjectValuesSnykFindingsCheck,
+  facts = getConfig().facts
 ): Promise<Risk> {
   const check = 'snykFindings';
   const recommendations: string[] = [];
-  const ignoreNonUpgradables = config.values.checks.project.snykFindings.ignoreNonUpgradables;
+  const { ignoreNonUpgradables } = checkValues;
 
-  const validFindings = findings.filter(f => {
+  const validFindings = findings.filter((f) => {
     const { open, isUpgradable } = f.properties;
     if (!open || (ignoreNonUpgradables && !isUpgradable)) {
       return false;
@@ -76,55 +96,74 @@ export async function codeRepoSnykFindingsCheck(
   // e.g. 1 CRITICAL, 2 HIGH, etc.
 
   const validFindingCounts: string[] = [];
-  for (const severity of [ 'critical', 'high', 'medium', 'low' ]) {
-    const sevCount = validFindings.filter(f => f.properties.severity.toLowerCase() === severity).length;
+  for (const severity of ['critical', 'high', 'medium', 'low']) {
+    const sevCount = validFindings.filter(
+      (f) => f.properties.severity.toLowerCase() === severity
+    ).length;
     if (sevCount > 0) {
-        validFindingCounts.push(`${sevCount} ${severity.toUpperCase()}`);
-   }
+      validFindingCounts.push(`${sevCount} ${severity.toUpperCase()}`);
+    }
   }
   if (!validFindingCounts.length) {
     validFindingCounts.push('None');
   } else {
     let link = '';
-    if (config.facts.j1.client) {
-      link = await config.facts.j1.client.getQueryUrl(`Find snyk_finding with open=true that HAS CodeRepo with name="${config.facts.project.name}" return TREE`);
+    if (facts.j1.client) {
+      link = await facts.j1.client.getQueryUrl(
+        `Find snyk_finding with open=true that HAS CodeRepo with name="${facts.project.name}" return TREE`
+      );
     }
     recommendations.push('Upgrade vulnerable packages. ' + link);
   }
 
-  return formatRisk({
-    check,
-    description: validFindingCounts.join(', '),
-    value,
-    recommendations
-  }, riskCategory, check);
+  return formatRisk(
+    {
+      check,
+      description: validFindingCounts.join(', '),
+      value,
+      recommendations,
+    },
+    riskCategory,
+    check
+  );
 }
 
 export async function threatModelCheck(
-  config: Config = getConfig()
+  checkValues: ProjectValuesThreatModelsCheck,
+  checkFacts: ProjectFacts['project']
 ): Promise<Risk> {
   const check = 'threatModels';
   const recommendations: string[] = [];
-  const enabled = config.values.checks.project.threatModels.enabled;
+  const { enabled } = checkValues;
   let value = 0;
 
   if (!enabled) {
-    return formatRisk({
-      check,
-      description: 'threatModels check is disabled',
-      value,
-      recommendations
-    }, riskCategory, check);
+    return formatRisk(
+      {
+        check,
+        description: 'threatModels check is disabled',
+        value,
+        recommendations,
+      },
+      riskCategory,
+      check
+    );
   }
 
-  if (!config.facts.project.threatDragonModels.length) {
-    recommendations.push(`Perform threat analysis with OWASP ThreatDragon, and commit the JSON output to the '${config.facts.project.threatDragonModelsDir}' folder.`);
-    return formatRisk({
-      check,
-      description: 'No ThreatDragon models found.',
-      value: config.values.checks.project.threatModels.missingValue,
-      recommendations
-    }, riskCategory, check);
+  if (!checkFacts.threatDragonModels.length) {
+    recommendations.push(
+      `Perform threat analysis with OWASP ThreatDragon, and commit the JSON output to the '${checkFacts.threatDragonModelsDir}' folder.`
+    );
+    return formatRisk(
+      {
+        check,
+        description: 'No ThreatDragon models found.',
+        value: checkValues.missingValue,
+        recommendations,
+      },
+      riskCategory,
+      check
+    );
   }
 
   interface Threat {
@@ -136,14 +175,14 @@ export async function threatModelCheck(
 
   const openThreats: Threat[] = [];
   const mitigatedThreats: Threat[] = [];
-  const sevValues: { [index: string]: number; } = {
-    low: config.values.checks.project.threatModels.lowRiskValue,
-    medium: config.values.checks.project.threatModels.mediumRiskValue,
-    high: config.values.checks.project.threatModels.highRiskValue,
+  const sevValues: { [index: string]: number } = {
+    low: checkValues.lowRiskValue,
+    medium: checkValues.mediumRiskValue,
+    high: checkValues.highRiskValue,
   };
 
   try {
-    for (const modelFile of config.facts.project.threatDragonModels) {
+    for (const modelFile of checkFacts.threatDragonModels) {
       // json.detail.diagrams[0].diagramJson.cells[3].threats[1].severity = "Low";
       // json.detail.diagrams[0].diagramJson.cells[3].threats[1].status = "Open";
       const model = JSON.parse(await fs.readFile(String(modelFile), 'utf8'));
@@ -163,7 +202,7 @@ export async function threatModelCheck(
         }
       }
     }
-  } catch(e) {
+  } catch (e) {
     log('Could not parse one or more threatModel files: ' + e, 'WARN');
   }
 
@@ -172,24 +211,30 @@ export async function threatModelCheck(
   }
 
   const openThreatCounts: string[] = [];
-  for (const severity of [ 'high', 'medium', 'low' ]) {
-    const sevCount = openThreats.filter(t => t.severity.toLowerCase() === severity).length;
+  for (const severity of ['high', 'medium', 'low']) {
+    const sevCount = openThreats.filter(
+      (t) => t.severity.toLowerCase() === severity
+    ).length;
     if (sevCount > 0) {
       openThreatCounts.push(`${sevCount} ${severity.toUpperCase()}`);
     }
   }
 
   if (!openThreatCounts.length && mitigatedThreats.length) {
-    value += config.values.checks.project.threatModels.allMitigatedCredit;
+    value += checkValues.allMitigatedCredit;
     openThreatCounts.push('All modeled threats have been mitigated! 🎉');
   }
 
-  return formatRisk({
-    check,
-    description: openThreatCounts.join(', '),
-    value,
-    recommendations
-  }, riskCategory, check);
+  return formatRisk(
+    {
+      check,
+      description: openThreatCounts.join(', '),
+      value,
+      recommendations,
+    },
+    riskCategory,
+    check
+  );
 }
 
 export function sortFindings(findings: any[]): SortedFindings {
@@ -204,7 +249,7 @@ export function sortFindings(findings: any[]): SortedFindings {
       snykFindings.push(finding);
       sorted = true;
     }
-    if (types.includes('deferred_maintenance')){
+    if (types.includes('deferred_maintenance')) {
       maintenanceFindings.push(finding);
       sorted = true;
     }
@@ -216,13 +261,15 @@ export function sortFindings(findings: any[]): SortedFindings {
   return {
     snykFindings,
     maintenanceFindings,
-    unknownFindings
+    unknownFindings,
   };
 }
 
-export async function gatherFacts(config: Config = getConfig()): Promise<ProjectFacts> {
+export async function gatherFacts(
+  config: Config = getConfig()
+): Promise<ProjectFacts> {
   const { dir } = config.flags;
-  const nameFile = path.join(dir, 'project.name')
+  const nameFile = path.join(dir, 'project.name');
   let name;
   if (await fs.pathExists(nameFile)) {
     name = (await fs.readFile(nameFile, 'utf8')).trim();
@@ -236,12 +283,16 @@ export async function gatherFacts(config: Config = getConfig()): Promise<Project
   let models: string[] = [];
   if (await fs.pathExists(threatDragonModelsDir)) {
     // check top-level dir
-    models = models.concat(await findFiles(threatDragonModelsDir, threatDragonModelsPattern));
+    models = models.concat(
+      await findFiles(threatDragonModelsDir, threatDragonModelsPattern)
+    );
     // check any sub-dirs
     for (const ent of await fs.readdir(threatDragonModelsDir)) {
       const subdir = path.join(threatDragonModelsDir, ent);
       if ((await fs.stat(subdir)).isDirectory()) {
-        models = models.concat(await findFiles(subdir, threatDragonModelsPattern));
+        models = models.concat(
+          await findFiles(subdir, threatDragonModelsPattern)
+        );
       }
     }
   }
@@ -249,7 +300,7 @@ export async function gatherFacts(config: Config = getConfig()): Promise<Project
     project: {
       name,
       threatDragonModels: models,
-      threatDragonModelsDir: modelsDir
-    }
+      threatDragonModelsDir: modelsDir,
+    },
   };
 }
