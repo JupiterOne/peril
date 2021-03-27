@@ -1,48 +1,72 @@
-import { formatRisk, runCmd } from './helpers';
-import { getConfig } from './config';
-import { Override, Config, OverrideFacts, Risk } from './types';
 import * as fs from 'fs-extra';
-import { log, findFiles, isWorldWritable } from './helpers';
 import path from 'path';
+import { getConfig } from './config';
+import { findFiles, formatRisk, isWorldWritable, log, runCmd } from './helpers';
+import { Config, Override, OverrideFacts, Risk } from './types';
 
 const riskCategory = 'override';
 
 const Authorized_Keyring = './authorized_pubkeys.gpg';
 
-export async function gatherFacts(config: Config = getConfig()): Promise<OverrideFacts> {
+export async function gatherFacts(
+  config: Config = getConfig()
+): Promise<OverrideFacts> {
   const repoOverridesPattern = '.*override-until_.*.asc$';
   const repoOverridesDir = path.join(config.flags.dir, '.peril');
 
   const pubKeysDir = config.flags.pubkeyDir;
   const pubKeyPattern = '.*.gpg$';
   const availablePubKeys = await findFiles(String(pubKeysDir), pubKeyPattern);
+  log(
+    `found ${availablePubKeys.length} files in ${pubKeysDir}: ${availablePubKeys}`,
+    'DEBUG'
+  );
 
   return {
     override: {
-        trustedPubKeysDir: pubKeysDir,
-        trustedPubKeys: await validatePubKeys(availablePubKeys),
-        repoOverrides: await findFiles(String(repoOverridesDir), repoOverridesPattern)
-    }
+      trustedPubKeysDir: pubKeysDir,
+      trustedPubKeys: await validatePubKeys(availablePubKeys),
+      repoOverrides: await findFiles(
+        String(repoOverridesDir),
+        repoOverridesPattern
+      ),
+    },
   };
 }
 
-export async function validateOverride(override: Override, now: Date = new Date(), cmdRunner: any = undefined): Promise<boolean> {
+export async function validateOverride(
+  override: Override,
+  now: Date = new Date(),
+  cmdRunner: any = undefined
+): Promise<boolean> {
   const then = new Date(override.exp);
   if (now > then) {
-    log(`Ignoring expired override credit of ${override.credit}, expiry ${override.expires}.`, 'DEBUG');
+    log(
+      `Ignoring expired override credit of ${override.credit}, expiry ${override.expires}.`,
+      'DEBUG'
+    );
     return false;
   }
   const rootSHA = await getRootSHA(cmdRunner);
   if (rootSHA !== override.rootSHA) {
-    log(`Ignoring copy/paste override credit of ${override.credit}, signer ${override.signedBy}.`, 'DEBUG');
+    log(
+      `Ignoring copy/paste override credit of ${override.credit}, signer ${override.signedBy}.`,
+      'DEBUG'
+    );
     return false;
   }
 
   return true;
 }
 
-export async function verifyOverrideSignature(file: string, cmdRunner: any = undefined): Promise<boolean> {
-  const cmd = await runCmd(`gpg --no-default-keyring --keyring ${Authorized_Keyring} --verify ${file}`, cmdRunner);
+export async function verifyOverrideSignature(
+  file: string,
+  cmdRunner: any = undefined
+): Promise<boolean> {
+  const cmd = await runCmd(
+    `gpg --no-default-keyring --keyring ${Authorized_Keyring} --verify ${file}`,
+    cmdRunner
+  );
   if (cmd.failed) {
     return false;
   }
@@ -66,6 +90,7 @@ export async function parseOverride(file: string): Promise<Override> {
 }
 
 export async function validatePubKeys(keys: string[]): Promise<string[]> {
+  log(`validating ${keys.length} keys: ${keys}`, 'DEBUG');
   const validPubKeys: string[] = [];
   const key = keys[0];
   if (!key) {
@@ -79,7 +104,10 @@ export async function validatePubKeys(keys: string[]): Promise<string[]> {
       if (!isWorldWritable(dirMode) && !isWorldWritable(keyMode)) {
         validPubKeys.push(key);
       } else {
-        log(`Pubkey ${key} is world writable and cannot be trusted! Skipping...`, 'WARN');
+        log(
+          `Pubkey ${key} is world writable and cannot be trusted! Skipping...`,
+          'WARN'
+        );
       }
     } catch (err) {
       log('Error accessing pubkey file or directory: ' + err);
@@ -90,27 +118,40 @@ export async function validatePubKeys(keys: string[]): Promise<string[]> {
   return validPubKeys;
 }
 
-export async function importPublicKeys(keys: string[], cmdRunner: any = undefined): Promise<void> {
+export async function importPublicKeys(
+  keys: string[],
+  cmdRunner: any = undefined
+): Promise<void> {
   for (const key of keys) {
-    const cmd = await runCmd(`gpg --no-default-keyring --keyring ${Authorized_Keyring} --import ${key}`, cmdRunner);
+    const cmd = await runCmd(
+      `gpg --no-default-keyring --keyring ${Authorized_Keyring} --import ${key}`,
+      cmdRunner
+    );
     if (cmd.failed) {
       log('Error importing GPG key: ' + cmd.stderr, 'ERROR');
     }
   }
 }
 
-export async function removePublicKeyring(cmdRunner: any = undefined): Promise<void> {
+export async function removePublicKeyring(
+  cmdRunner: any = undefined
+): Promise<void> {
   await runCmd(`rm ${Authorized_Keyring}*`, cmdRunner, { shell: true });
 }
 
-export async function createOverride(credit: number, expiry: number, justification: string, cmdRunner: any = undefined): Promise<Override> {
+export async function createOverride(
+  credit: number,
+  expiry: number,
+  justification: string,
+  cmdRunner: any = undefined
+): Promise<Override> {
   return {
     exp: expiry,
-    expires: (new Date(expiry)).toString(),
+    expires: new Date(expiry).toString(),
     signedBy: await getGPGIdentity(cmdRunner),
     rootSHA: await getRootSHA(cmdRunner),
     justification,
-    credit
+    credit,
   };
 }
 
@@ -123,23 +164,33 @@ export async function getRootSHA(cmdRunner: any = undefined): Promise<string> {
   return res.stdout;
 }
 
-export async function getGPGIdentity(cmdRunner: any = undefined): Promise<string> {
+export async function getGPGIdentity(
+  cmdRunner: any = undefined
+): Promise<string> {
   let identity: string;
   try {
-    const gpgKeys = await runCmd('gpg --list-secret-keys --with-colons', cmdRunner);
+    const gpgKeys = await runCmd(
+      'gpg --list-secret-keys --with-colons',
+      cmdRunner
+    );
     const secretKeys = gpgKeys.stdout.split('\n');
-    const uidLine = secretKeys.filter(k => /^uid:/.exec(k)).pop();
+    const uidLine = secretKeys.filter((k) => /^uid:/.exec(k)).pop();
     // uidLine is of form:
     // uid:u::::1412160812::4A19E3CAE9B6FFD6D81EAC012D1110A19E074749::Some User <some.user@company.com>::::::::::0:
-    identity = ((uidLine || '').split(':')[9]) || '';
+    identity = (uidLine || '').split(':')[9] || '';
   } catch (e) {
     return '';
   }
   return identity;
 }
 
-export async function clearsign(data: any, cmdRunner: any = undefined): Promise<String> {
-  const res = await runCmd('gpg --clearsign', cmdRunner, { input: JSON.stringify(data, null, 2) });
+export async function clearsign(
+  data: any,
+  cmdRunner: any = undefined
+): Promise<String> {
+  const res = await runCmd('gpg --clearsign', cmdRunner, {
+    input: JSON.stringify(data, null, 2),
+  });
   return res.stdout || '';
 }
 
@@ -150,19 +201,26 @@ export async function manualOverrideCheck(overrideFile: string): Promise<Risk> {
   const isValid = await validateOverride(override);
 
   if (!isValid) {
-    return formatRisk({
-      check,
-      value: 0,
-      description: `Expired or Invalid Override: ${JSON.stringify(override)}`,
-      recommendations
-    }, riskCategory, check);
+    return formatRisk(
+      {
+        check,
+        value: 0,
+        description: `Expired or Invalid Override: ${JSON.stringify(override)}`,
+        recommendations,
+      },
+      riskCategory,
+      check
+    );
   }
 
-  return formatRisk({
-    check,
-    value: override.credit,
-    description: `justification: ${override.justification}, authorized by: ${override.signedBy}`,
-    recommendations
-  }, riskCategory, check)
+  return formatRisk(
+    {
+      check,
+      value: override.credit,
+      description: `justification: ${override.justification}, authorized by: ${override.signedBy}`,
+      recommendations,
+    },
+    riskCategory,
+    check
+  );
 }
-
