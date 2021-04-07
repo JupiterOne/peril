@@ -174,6 +174,8 @@ export async function depScanCheck(
     .split(',')
     .map((i) => i.trim());
 
+  const validFindings: DepScanFinding[] = [];
+
   for (const finding of findings) {
     if (!finding.fix_version && ignoreUnfixable) {
       continue;
@@ -185,6 +187,7 @@ export async function depScanCheck(
       continue;
     }
     value += parseFloat(finding.cvss_score);
+    validFindings.push(finding);
     sevCounts[finding.severity.toLowerCase()] += 1;
   }
 
@@ -200,7 +203,12 @@ export async function depScanCheck(
     validFindingCounts.push('None 🎉');
     value += noVulnerabilitiesCredit;
   } else {
-    recommendations.push('Upgrade vulnerable packages.');
+    recommendations.push('Upgrade vulnerable packages:');
+    for (const finding of validFindings) {
+      recommendations.push(
+        `  - ${finding.package}@${finding.version} can be upgraded to ${finding.fix_version}`
+      );
+    }
   }
 
   return formatRisk(
