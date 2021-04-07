@@ -205,7 +205,9 @@ export async function depScanCheck(
   } else {
     recommendations.push('Upgrade vulnerable packages:');
     for (const finding of validFindings) {
-      recommendations.push(`  - ${finding.package}`);
+      recommendations.push(
+        `  - ${finding.package}@${finding.version} can be upgraded to ${finding.fix_version}`
+      );
     }
   }
 
