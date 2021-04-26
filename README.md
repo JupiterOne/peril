@@ -114,11 +114,12 @@ Checks related to Git SCM:
 
 Checks related to the code being analyzed.
 
-| Check           | Config Path                        | Notes                                                                                 |
-| --------------- | ---------------------------------- | ------------------------------------------------------------------------------------- |
-| linesChanged    | values.checks.code.linesChanged    | Large PRs represent a strain on code reviewers, and increase risk of rubber-stamping. |
-| filesChanged    | values.checks.code.filesChanged    | Large PRs represent a strain on code reviewers, and increase risk of rubber-stamping. |
-| depscanFindings | values.checks.code.depscanFindings | 3rd-party dependency vulnerabilities represent a supply-chain risk. `**`              |
+| Check           | Config Path                        | Notes                                                                                                       |
+| --------------- | ---------------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| linesChanged    | values.checks.code.linesChanged    | Large PRs represent a strain on code reviewers, and increase risk of rubber-stamping.                       |
+| filesChanged    | values.checks.code.filesChanged    | Large PRs represent a strain on code reviewers, and increase risk of rubber-stamping.                       |
+| depscanFindings | values.checks.code.depscanFindings | 3rd-party dependency vulnerabilities represent a supply-chain risk. `**`                                    |
+| bannedLicenses  | values.checks.code.bannedLicenses  | 3rd-party dependencies that have non-compliant or incompatible licenses represent a supply-chain risk. `**` |
 
 ### PROJECT
 

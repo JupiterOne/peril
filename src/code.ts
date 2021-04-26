@@ -4,17 +4,21 @@ import { getConfig } from './config';
 import { findFiles, formatRisk, runCmd } from './helpers';
 import {
   CodeFacts,
+  CodeValuesBannedLicensesCheck,
   CodeValuesDepScanCheck,
   CodeValuesFileChangedCheck,
   CodeValuesLinesChangedCheck,
   Config,
   DepScanFinding,
+  License,
+  LicenseFinding,
   MaybeString,
   Risk,
   ShortStat,
 } from './types';
 
 const riskCategory = 'code';
+const highRiskLicenseValue = 1000; // High risk licenses should break the build
 
 export function parseGitDiffShortStat(shortStat: string): ShortStat {
   // expects input like:  9 files changed, 19 insertions(+), 49 deletions(-)
@@ -222,18 +226,91 @@ export async function depScanCheck(
   );
 }
 
+export async function bannedLicensesCheck(
+  findings: LicenseFinding[],
+  checkValues: CodeValuesBannedLicensesCheck
+): Promise<Risk> {
+  const check = 'bannedLicenseFindings';
+  const recommendations: string[] = [];
+  const { licenses, missingValue, noVulnerabilitiesCredit } = checkValues;
+
+  let value = 0;
+
+  if (!findings.length) {
+    recommendations.push(
+      'Ensure ShiftLeft/scan dependency check runs prior to peril.'
+    );
+    return formatRisk(
+      {
+        check,
+        description: 'Code - Missing BOM Scan',
+        value: missingValue,
+        recommendations,
+      },
+      riskCategory,
+      check
+    );
+  }
+
+  const invalidMaterials: LicenseFinding[] = [];
+  for (const finding of findings) {
+    if (finding.licenses !== null) {
+      const bannedLicenses = finding.licenses.filter((license: License) => {
+        for (const licenseRegex of licenses) {
+          const regex = new RegExp(licenseRegex);
+          if (regex.exec(license.license.id) !== null) {
+            value += highRiskLicenseValue;
+            return true;
+          }
+        }
+      });
+      if (bannedLicenses.length > 0) {
+        invalidMaterials.push({
+          purl: finding.purl,
+          licenses: bannedLicenses,
+        });
+      }
+    }
+  }
+  if (!invalidMaterials.length) {
+    value += noVulnerabilitiesCredit;
+  } else {
+    recommendations.push('Consider removing/replacing the following packages:');
+    for (const finding of invalidMaterials) {
+      recommendations.push(
+        `  - ${
+          finding.purl
+        } contains the following banned licenses (${finding.licenses.map(
+          (license) => license.license.id
+        )})`
+      );
+    }
+  }
+
+  return formatRisk(
+    {
+      check,
+      description: invalidMaterials.map((material) => material.purl).join(', '),
+      value,
+      recommendations,
+    },
+    riskCategory,
+    check
+  );
+}
+
 export async function gatherFacts(
   cmdRunner: any = undefined,
   config: Config = getConfig()
 ): Promise<CodeFacts> {
   const depScanReportPattern = 'depscan-report.*.json';
-  const depScanReportDir = path.join(config.flags.dir, 'reports');
+  const licensesReportPattern = 'bom-nodejs.json';
+  const reportDir = path.join(config.flags.dir, 'reports');
   return {
     code: {
       scans: {
-        depScanReport: (
-          await findFiles(depScanReportDir, depScanReportPattern)
-        )[0],
+        depScanReport: (await findFiles(reportDir, depScanReportPattern))[0],
+        bomReport: (await findFiles(reportDir, licensesReportPattern))[0],
       },
     },
   };
@@ -261,4 +338,25 @@ export async function parseShiftLeftDepScan(
     return [];
   }
   return depFindings;
+}
+
+export async function parseBomLicenses(
+  reportFile: MaybeString,
+  readFile: typeof fs.readFile = fs.readFile
+): Promise<LicenseFinding[]> {
+  const licenceFindings: LicenseFinding[] = [];
+  try {
+    const reportString = await readFile(reportFile, 'utf8');
+    const components = JSON.parse(reportString).components;
+    // each line in report is a stringified JSON finding expression
+    for (const component of components) {
+      licenceFindings.push({
+        purl: component.purl,
+        licenses: component.licenses,
+      });
+    }
+  } catch (e) {
+    return [];
+  }
+  return licenceFindings;
 }

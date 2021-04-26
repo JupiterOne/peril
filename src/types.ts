@@ -31,6 +31,7 @@ export type CodeFacts = {
   code: {
     scans: {
       depScanReport: MaybeString;
+      bomReport: MaybeString;
     };
   };
 };
@@ -108,7 +109,14 @@ export type CodeValues = {
     linesChanged: CodeValuesLinesChangedCheck;
     filesChanged: CodeValuesFileChangedCheck;
     depscanFindings: CodeValuesDepScanCheck;
+    bannedLicenses: CodeValuesBannedLicensesCheck;
   };
+};
+
+export type CodeValuesBannedLicensesCheck = {
+  licenses: string[];
+  missingValue: number;
+  noVulnerabilitiesCredit: number;
 };
 
 export type CodeValuesDepScanCheck = {
@@ -225,6 +233,20 @@ export type DepScanFinding = {
   severity: string;
   cvss_score: string;
   short_description: string;
+};
+
+export type LicenseFinding = {
+  licenses: License[];
+  purl: string;
+};
+
+export type License = {
+  license: LicenseDetails;
+};
+
+export type LicenseDetails = {
+  id: string;
+  url: string;
 };
 
 export type GitleaksMetrics = {
