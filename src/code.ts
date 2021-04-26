@@ -346,7 +346,7 @@ export async function parseBomLicenses(
 ): Promise<LicenseFinding[]> {
   const licenceFindings: LicenseFinding[] = [];
   try {
-    const reportString = await readFile(reportFile, 'utf8');
+    const reportString = await readFile(String(reportFile), 'utf8');
     const components = JSON.parse(reportString).components;
     // each line in report is a stringified JSON finding expression
     for (const component of components) {
