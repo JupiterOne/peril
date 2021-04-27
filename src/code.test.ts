@@ -1,9 +1,6 @@
 import { depScanFindings } from '../test/fixtures/depscanFindings';
 import { config } from '../test/fixtures/testConfig';
-import {
-  badLicenseFindings,
-  goodLicenseFindings,
-} from './../test/fixtures/bomReport';
+import { badLicenses, goodLicenses } from './../test/fixtures/bomReport';
 import {
   bannedLicensesCheck,
   depScanCheck,
@@ -136,21 +133,21 @@ describe('code risks', () => {
     expect(risk.description).toMatch(/None/);
   });
 
-  it('parseBomLicenses parses JSON file into LicenseFinding[]', async () => {
-    const reportString = badLicenseFindings.map((f) => JSON.stringify(f));
-    const findings = await parseBomLicenses(
+  it('parseBomLicenses parses JSON file into BOMLicenses[]', async () => {
+    const reportString = badLicenses.map((f) => JSON.stringify(f));
+    const licenses = await parseBomLicenses(
       'testReport',
       jest.fn().mockResolvedValueOnce('{"components": [' + reportString + ']}')
     );
-    expect(findings).toEqual(badLicenseFindings);
+    expect(licenses).toEqual(badLicenses);
     expect(
       await parseBomLicenses('testReport', jest.fn().mockResolvedValueOnce(''))
     ).toEqual([]);
   });
 
   it('parseBomLicenses returns empty Array on error/missing report', async () => {
-    const findings = await parseBomLicenses(undefined);
-    expect(findings).toEqual([]);
+    const licenses = await parseBomLicenses(undefined);
+    expect(licenses).toEqual([]);
   });
 
   it('bannedLicensesCheck penalizes for missing scans', async () => {
@@ -160,7 +157,7 @@ describe('code risks', () => {
 
   it('bannedLicensesCheck successfully identifies high risk licenses', async () => {
     const konfig = Object.assign({}, bannedLicenses);
-    const risk = await bannedLicensesCheck(badLicenseFindings, konfig);
+    const risk = await bannedLicensesCheck(badLicenses, konfig);
     expect(risk.value).toEqual(2000);
     expect(risk.description).toMatch(
       'CODE - bannedLicenseFindings: pkg:npm/babel/compat-data@7.13.15, pkg:npm/electron-to-bromium@1.3.713 +2000.00'
@@ -169,7 +166,7 @@ describe('code risks', () => {
 
   it('bannedLicensesCheck passes when no high risk licenses are found', async () => {
     const konfig = Object.assign({}, bannedLicenses);
-    const risk = await bannedLicensesCheck(goodLicenseFindings, konfig);
+    const risk = await bannedLicensesCheck(goodLicenses, konfig);
     expect(risk.value).toEqual(-5);
     expect(risk.description).toMatch('None 🎉');
   });

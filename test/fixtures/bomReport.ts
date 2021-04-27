@@ -1,6 +1,6 @@
-import { LicenseFinding } from './../../src/types';
+import { BOMLicenses } from './../../src/types';
 
-export const badLicenseFindings: LicenseFinding[] = [
+export const badLicenses: BOMLicenses[] = [
   {
     purl: 'pkg:npm/babel/compat-data@7.13.15',
     licenses: [
@@ -58,7 +58,7 @@ export const badLicenseFindings: LicenseFinding[] = [
   },
 ];
 
-export const goodLicenseFindings: LicenseFinding[] = [
+export const goodLicenses: BOMLicenses[] = [
   {
     purl: 'pkg:npm/babel/compat-data@7.13.15',
     licenses: [

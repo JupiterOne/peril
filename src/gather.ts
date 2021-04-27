@@ -68,12 +68,10 @@ export async function codeRisk(): Promise<RiskCategory> {
   );
   checks.push(code.depScanCheck(depScanFindings, cfgValues.depscanFindings));
 
-  const licenseScanFindings = await code.parseBomLicenses(
+  const bomLicenses = await code.parseBomLicenses(
     config.facts.code.scans.bomReport
   );
-  checks.push(
-    code.bannedLicensesCheck(licenseScanFindings, cfgValues.bannedLicenses)
-  );
+  checks.push(code.bannedLicensesCheck(bomLicenses, cfgValues.bannedLicenses));
 
   // gather risks
   const risks = await Promise.all(checks);

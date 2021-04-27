@@ -3,6 +3,7 @@ import path from 'path';
 import { getConfig } from './config';
 import { findFiles, formatRisk, runCmd } from './helpers';
 import {
+  BOMLicenses,
   CodeFacts,
   CodeValuesBannedLicensesCheck,
   CodeValuesDepScanCheck,
@@ -11,7 +12,6 @@ import {
   Config,
   DepScanFinding,
   License,
-  LicenseFinding,
   MaybeString,
   Risk,
   ShortStat,
@@ -227,7 +227,7 @@ export async function depScanCheck(
 }
 
 export async function bannedLicensesCheck(
-  findings: LicenseFinding[],
+  bomLicenses: BOMLicenses[],
   checkValues: CodeValuesBannedLicensesCheck
 ): Promise<Risk> {
   const check = 'bannedLicenseFindings';
@@ -236,7 +236,7 @@ export async function bannedLicensesCheck(
 
   let value = 0;
 
-  if (!findings.length) {
+  if (!bomLicenses.length) {
     recommendations.push(
       'Ensure ShiftLeft/scan dependency check runs prior to peril.'
     );
@@ -252,10 +252,10 @@ export async function bannedLicensesCheck(
     );
   }
 
-  const invalidMaterials: LicenseFinding[] = [];
-  for (const finding of findings) {
-    if (finding.licenses !== null) {
-      const bannedLicenses = finding.licenses.filter((license: License) => {
+  const licenseFindings: BOMLicenses[] = [];
+  for (const entry of bomLicenses) {
+    if (entry.licenses !== null) {
+      const bannedLicenses = entry.licenses.filter((license: License) => {
         for (const licenseRegex of licenses) {
           const regex = new RegExp(licenseRegex);
           if (regex.exec(license.license.id) !== null) {
@@ -265,18 +265,18 @@ export async function bannedLicensesCheck(
         }
       });
       if (bannedLicenses.length > 0) {
-        invalidMaterials.push({
-          purl: finding.purl,
+        licenseFindings.push({
+          purl: entry.purl,
           licenses: bannedLicenses,
         });
       }
     }
   }
-  if (!invalidMaterials.length) {
+  if (!licenseFindings.length) {
     value += noVulnerabilitiesCredit;
   } else {
     recommendations.push('Consider removing/replacing the following packages:');
-    for (const finding of invalidMaterials) {
+    for (const finding of licenseFindings) {
       recommendations.push(
         `  - ${
           finding.purl
@@ -291,8 +291,8 @@ export async function bannedLicensesCheck(
     {
       check,
       description:
-        invalidMaterials.length > 0
-          ? invalidMaterials.map((material) => material.purl).join(', ')
+        licenseFindings.length > 0
+          ? licenseFindings.map((material) => material.purl).join(', ')
           : 'None 🎉',
       value,
       recommendations,
@@ -346,14 +346,14 @@ export async function parseShiftLeftDepScan(
 export async function parseBomLicenses(
   reportFile: MaybeString,
   readFile: typeof fs.readFile = fs.readFile
-): Promise<LicenseFinding[]> {
-  const licenceFindings: LicenseFinding[] = [];
+): Promise<BOMLicenses[]> {
+  const bomLicenses: BOMLicenses[] = [];
   try {
     const reportString = await readFile(String(reportFile), 'utf8');
     const components = JSON.parse(reportString).components;
-    // construct LicenseFinding[] from components array in the BOM
+    // construct BOMLicenses[] from components array in the BOM
     for (const component of components) {
-      licenceFindings.push({
+      bomLicenses.push({
         purl: component.purl,
         licenses: component.licenses,
       });
@@ -361,5 +361,5 @@ export async function parseBomLicenses(
   } catch (e) {
     return [];
   }
-  return licenceFindings;
+  return bomLicenses;
 }

@@ -235,7 +235,7 @@ export type DepScanFinding = {
   short_description: string;
 };
 
-export type LicenseFinding = {
+export type BOMLicenses = {
   licenses: License[];
   purl: string;
 };
