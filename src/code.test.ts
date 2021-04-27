@@ -1,6 +1,9 @@
 import { depScanFindings } from '../test/fixtures/depscanFindings';
 import { config } from '../test/fixtures/testConfig';
-import { licenseFindings } from './../test/fixtures/bomReport';
+import {
+  badLicenseFindings,
+  goodLicenseFindings,
+} from './../test/fixtures/bomReport';
 import {
   bannedLicensesCheck,
   depScanCheck,
@@ -134,12 +137,12 @@ describe('code risks', () => {
   });
 
   it('parseBomLicenses parses JSON file into LicenseFinding[]', async () => {
-    const reportString = licenseFindings.map((f) => JSON.stringify(f));
+    const reportString = badLicenseFindings.map((f) => JSON.stringify(f));
     const findings = await parseBomLicenses(
       'testReport',
       jest.fn().mockResolvedValueOnce('{"components": [' + reportString + ']}')
     );
-    expect(findings).toEqual(licenseFindings);
+    expect(findings).toEqual(badLicenseFindings);
     expect(
       await parseBomLicenses('testReport', jest.fn().mockResolvedValueOnce(''))
     ).toEqual([]);
@@ -157,10 +160,17 @@ describe('code risks', () => {
 
   it('bannedLicensesCheck successfully identifies high risk licenses', async () => {
     const konfig = Object.assign({}, bannedLicenses);
-    const risk = await bannedLicensesCheck(licenseFindings, konfig);
+    const risk = await bannedLicensesCheck(badLicenseFindings, konfig);
     expect(risk.value).toEqual(2000);
     expect(risk.description).toMatch(
       'CODE - bannedLicenseFindings: pkg:npm/babel/compat-data@7.13.15, pkg:npm/electron-to-bromium@1.3.713 +2000.00'
     );
+  });
+
+  it('bannedLicensesCheck passes when no high risk licenses are found', async () => {
+    const konfig = Object.assign({}, bannedLicenses);
+    const risk = await bannedLicensesCheck(goodLicenseFindings, konfig);
+    expect(risk.value).toEqual(-5);
+    expect(risk.description).toMatch('None 🎉');
   });
 });

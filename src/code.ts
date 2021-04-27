@@ -290,7 +290,10 @@ export async function bannedLicensesCheck(
   return formatRisk(
     {
       check,
-      description: invalidMaterials.map((material) => material.purl).join(', '),
+      description:
+        invalidMaterials.length > 0
+          ? invalidMaterials.map((material) => material.purl).join(', ')
+          : 'None 🎉',
       value,
       recommendations,
     },
