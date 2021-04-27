@@ -33,6 +33,7 @@ export const config: Config = {
       scans: {
         depScanReport:
           '/Users/test/repos/jupiterone/peril/reports/depscan-report-nodejs.json',
+        bomReport: '/Users/test/repos/jupiterone/peril/reports/bom-nodejs.json',
       },
     },
     j1: {},
@@ -65,6 +66,24 @@ export const config: Config = {
           ignoreIndirects: true,
           missingValue: 10,
           noVulnerabilitiesCredit: 0,
+        },
+        bannedLicenses: {
+          /*
+           * HIGH risk licenses sourced from:
+           * - https://www.synopsys.com/blogs/software-security/top-open-source-licenses/
+           */
+          licenses: [
+            '^GPL',
+            '^LGPL',
+            '^AGPL',
+            'SSPL-1.0',
+            '^CC BY-SA',
+            'MS-RL',
+            'EUPL-1.2',
+            'CC-BY-NC-3.0',
+          ],
+          missingValue: 10,
+          noVulnerabilitiesCredit: -5,
         },
       },
       scm: {

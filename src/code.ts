@@ -3,18 +3,22 @@ import path from 'path';
 import { getConfig } from './config';
 import { findFiles, formatRisk, runCmd } from './helpers';
 import {
+  BOMLicenses,
   CodeFacts,
+  CodeValuesBannedLicensesCheck,
   CodeValuesDepScanCheck,
   CodeValuesFileChangedCheck,
   CodeValuesLinesChangedCheck,
   Config,
   DepScanFinding,
+  License,
   MaybeString,
   Risk,
   ShortStat,
 } from './types';
 
 const riskCategory = 'code';
+const highRiskLicenseValue = 1000; // High risk licenses should break the build
 
 export function parseGitDiffShortStat(shortStat: string): ShortStat {
   // expects input like:  9 files changed, 19 insertions(+), 49 deletions(-)
@@ -222,18 +226,94 @@ export async function depScanCheck(
   );
 }
 
+export async function bannedLicensesCheck(
+  bomLicenses: BOMLicenses[],
+  checkValues: CodeValuesBannedLicensesCheck
+): Promise<Risk> {
+  const check = 'bannedLicenseFindings';
+  const recommendations: string[] = [];
+  const { licenses, missingValue, noVulnerabilitiesCredit } = checkValues;
+
+  let value = 0;
+
+  if (!bomLicenses.length) {
+    recommendations.push(
+      'Ensure ShiftLeft/scan dependency check runs prior to peril.'
+    );
+    return formatRisk(
+      {
+        check,
+        description: 'Code - Missing BOM Scan',
+        value: missingValue,
+        recommendations,
+      },
+      riskCategory,
+      check
+    );
+  }
+
+  const licenseFindings: BOMLicenses[] = [];
+  for (const entry of bomLicenses) {
+    if (entry.licenses !== null) {
+      const bannedLicenses = entry.licenses.filter((license: License) => {
+        for (const licenseRegex of licenses) {
+          const regex = new RegExp(licenseRegex);
+          if (regex.exec(license.license.id) !== null) {
+            value += highRiskLicenseValue;
+            return true;
+          }
+        }
+      });
+      if (bannedLicenses.length > 0) {
+        licenseFindings.push({
+          purl: entry.purl,
+          licenses: bannedLicenses,
+        });
+      }
+    }
+  }
+  if (!licenseFindings.length) {
+    value += noVulnerabilitiesCredit;
+  } else {
+    recommendations.push('Consider removing/replacing the following packages:');
+    for (const finding of licenseFindings) {
+      recommendations.push(
+        `  - ${
+          finding.purl
+        } contains the following banned licenses (${finding.licenses.map(
+          (license) => license.license.id
+        )})`
+      );
+    }
+  }
+
+  return formatRisk(
+    {
+      check,
+      description:
+        licenseFindings.length > 0
+          ? licenseFindings.map((material) => material.purl).join(', ')
+          : 'None 🎉',
+      value,
+      recommendations,
+    },
+    riskCategory,
+    check
+  );
+}
+
 export async function gatherFacts(
   cmdRunner: any = undefined,
   config: Config = getConfig()
 ): Promise<CodeFacts> {
   const depScanReportPattern = 'depscan-report.*.json';
-  const depScanReportDir = path.join(config.flags.dir, 'reports');
+  const licensesReportPattern = 'bom-nodejs.json';
+  const reportDir = path.join(config.flags.dir, 'reports');
   return {
     code: {
       scans: {
-        depScanReport: (
-          await findFiles(depScanReportDir, depScanReportPattern)
-        )[0],
+        depScanReport: (await findFiles(reportDir, depScanReportPattern))[0],
+        bomReport: (await findFiles(reportDir, licensesReportPattern))[0],
       },
     },
   };
@@ -261,4 +341,25 @@ export async function parseShiftLeftDepScan(
     return [];
   }
   return depFindings;
+}
+
+export async function parseBomLicenses(
+  reportFile: MaybeString,
+  readFile: typeof fs.readFile = fs.readFile
+): Promise<BOMLicenses[]> {
+  const bomLicenses: BOMLicenses[] = [];
+  try {
+    const reportString = await readFile(String(reportFile), 'utf8');
+    const components = JSON.parse(reportString).components;
+    // construct BOMLicenses[] from components array in the BOM
+    for (const component of components) {
+      bomLicenses.push({
+        purl: component.purl,
+        licenses: component.licenses,
+      });
+    }
+  } catch (e) {
+    return [];
+  }
+  return bomLicenses;
 }
