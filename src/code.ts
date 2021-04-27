@@ -351,7 +351,7 @@ export async function parseBomLicenses(
   try {
     const reportString = await readFile(String(reportFile), 'utf8');
     const components = JSON.parse(reportString).components;
-    // each line in report is a stringified JSON finding expression
+    // construct LicenseFinding[] from components array in the BOM
     for (const component of components) {
       licenceFindings.push({
         purl: component.purl,
