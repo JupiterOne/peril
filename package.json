@@ -33,7 +33,7 @@
     "faker": "^5.1.0",
     "fs-extra": "^9.1.0",
     "globby": "^11.0.1",
-    "lodash": "^4.17.20",
+    "lodash": "^4.17.21",
     "memfs": "^3.2.0",
     "prompts": "^2.4.0",
     "rimraf": "^3.0.2",
@@ -42,7 +42,7 @@
   },
   "devDependencies": {
     "@jupiterone/typescript-tools": "^13.0.2",
-    "@oclif/dev-cli": "^1",
+    "@oclif/dev-cli": "^1.26.0",
     "@types/faker": "^5.1.5",
     "@types/lodash": "^4.14.165",
     "@types/rimraf": "^3.0.0",
