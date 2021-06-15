@@ -39,18 +39,21 @@ export async function validateOverride(
   now: Date = new Date(),
   cmdRunner: any = undefined
 ): Promise<boolean> {
-  const then = new Date(override.exp);
-  if (now > then) {
-    log(
-      `Ignoring expired override credit of ${override.credit}, expiry ${override.expires}.`,
-      'DEBUG'
-    );
-    return false;
-  }
   const rootSHA = await getRootSHA(cmdRunner);
   if (rootSHA !== override.rootSHA) {
     log(
       `Ignoring copy/paste override credit of ${override.credit}, signer ${override.signedBy}.`,
+      'DEBUG'
+    );
+    return false;
+  }
+  if (override.exp === -1) {
+    return true;
+  }
+  const then = new Date(override.exp);
+  if (now > then) {
+    log(
+      `Ignoring expired override credit of ${override.credit}, expiry ${override.expires}.`,
       'DEBUG'
     );
     return false;

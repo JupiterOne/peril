@@ -46,11 +46,9 @@ describe('override features', () => {
   });
 
   it('getGPGIdentity returns empty string when gpg lists no identifiable keys', async () => {
-    const mockRunCmd = jest
-      .fn()
-      .mockResolvedValueOnce({
-        stdout: 'grp:::::::::9323654C065DA99813D377011A1:',
-      });
+    const mockRunCmd = jest.fn().mockResolvedValueOnce({
+      stdout: 'grp:::::::::9323654C065DA99813D377011A1:',
+    });
     const id = await getGPGIdentity(mockRunCmd);
     expect(id).toEqual('');
   });
@@ -144,16 +142,18 @@ gpg:               imported: 1
   });
 
   it('validateOverride returns false if Override is expired', async () => {
-    const mockRunCmd = jest.fn();
+    const rootSHA = 'abcd1234';
+    const mockRunCmd = jest.fn().mockResolvedValueOnce({ stdout: rootSHA });
     const twoDaysAgo = Date.now() - 2 * 24 * 60 * 60 * 1000; // in millis
     const o: Override = {
       signedBy: 'some user',
       exp: twoDaysAgo,
       expires: new Date(twoDaysAgo).toString(),
-      rootSHA: 'abcd',
+      rootSHA,
       justification: 'test',
       credit: -1,
     };
+
     await expect(validateOverride(o, new Date(), mockRunCmd)).resolves.toBe(
       false
     );
@@ -194,27 +194,39 @@ gpg:               imported: 1
     );
   });
 
+  it('validateOverride returns true if exp is -1 and rootSHAs match', async () => {
+    const rootSHA = 'abcd1234';
+    const mockRunCmd = jest.fn().mockResolvedValueOnce({ stdout: rootSHA });
+    const o: Override = {
+      signedBy: 'some user',
+      exp: -1,
+      expires: 'never',
+      rootSHA,
+      justification: 'test',
+      credit: -10,
+    };
+
+    await expect(validateOverride(o, new Date(), mockRunCmd)).resolves.toBe(
+      true
+    );
+  });
   it('verifyOverrideSignature returns true if .asc file can be GPG verified', async () => {
-    const mockRunCmd = jest
-      .fn()
-      .mockResolvedValueOnce({
-        failed: false,
-        stdout: '',
-        stderr: 'Good signature from some user <some.user@corp.com>',
-      });
+    const mockRunCmd = jest.fn().mockResolvedValueOnce({
+      failed: false,
+      stdout: '',
+      stderr: 'Good signature from some user <some.user@corp.com>',
+    });
     await expect(
       verifyOverrideSignature('somefile.asc', mockRunCmd)
     ).resolves.toBe(true);
   });
 
   it('verifyOverrideSignature returns false if .asc file can NOT be GPG verified', async () => {
-    const mockRunCmd = jest
-      .fn()
-      .mockResolvedValueOnce({
-        failed: true,
-        stdout: '',
-        stderr: 'ENOENT file not found',
-      });
+    const mockRunCmd = jest.fn().mockResolvedValueOnce({
+      failed: true,
+      stdout: '',
+      stderr: 'ENOENT file not found',
+    });
     await expect(
       verifyOverrideSignature('someotherfile.asc', mockRunCmd)
     ).resolves.toBe(false);
