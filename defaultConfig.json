@@ -4,11 +4,11 @@
     "code": {
       "linesChanged": {
         "riskStep": 100,
-        "riskValuePerStep": 1
+        "riskValuePerStep": 0.1
       },
       "filesChanged": {
-        "riskStep": 20,
-        "riskValuePerStep": 1
+        "riskStep": 10,
+        "riskValuePerStep": 0.1
       },
       "depscanFindings": {
         "ignoreSeverityList": "INFO, LOW",
