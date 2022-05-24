@@ -2,7 +2,7 @@ import fs from 'fs-extra';
 import { get } from 'lodash';
 import path from 'path';
 import { getConfig } from './config';
-import { findFiles, formatRisk, log } from './helpers';
+import { findFiles, formatRisk, log, runCmd } from './helpers';
 import {
   Config,
   DeferredMaintenanceFinding,
@@ -265,6 +265,19 @@ export function sortFindings(findings: any[]): SortedFindings {
   };
 }
 
+export async function getRepoNameFromGitConfig(
+  cmdRunner: any = undefined
+): Promise<string | undefined> {
+  const cmd = await runCmd('git config --local remote.origin.url', cmdRunner);
+  if (cmd.failed || !cmd.stdout.length) {
+    return undefined;
+  }
+  const originUrl = cmd.stdout;
+  // originUrl will be of form, e.g.: 'https://github.com/user/reponame.git'
+  const repoName = (originUrl.split('/').pop() || '').split('.git')[0];
+  return repoName;
+}
+
 export async function gatherFacts(
   config: Config = getConfig()
 ): Promise<ProjectFacts> {
@@ -274,7 +287,7 @@ export async function gatherFacts(
   if (await fs.pathExists(nameFile)) {
     name = (await fs.readFile(nameFile, 'utf8')).trim();
   } else {
-    name = dir.split(path.sep).pop(); // default to directory name
+    name = (await getRepoNameFromGitConfig()) || dir.split(path.sep).pop(); // fallback to directory name as last resort
   }
 
   const modelsDir = config.env.threatDragonDir || 'ThreatDragonModels';

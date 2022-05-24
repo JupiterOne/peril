@@ -6,12 +6,47 @@ import { config } from '../test/fixtures/testConfig';
 import {
   codeRepoMaintenanceFindingsCheck,
   codeRepoSnykFindingsCheck,
+  getRepoNameFromGitConfig,
   sortFindings,
   threatModelCheck,
 } from './project';
 import { DeferredMaintenanceFinding, SnykFinding } from './types';
 
 describe('project risks', () => {
+  it('gets the repo name from git config if available', async () => {
+    const repoNameSSH = await getRepoNameFromGitConfig(
+      jest
+        .fn()
+        .mockResolvedValue({
+          failed: false,
+          stdout: 'git@github.com:jupiterone/testproject.git',
+        })
+    );
+    expect(repoNameSSH).toEqual('testproject');
+    const repoNameDNS = await getRepoNameFromGitConfig(
+      jest
+        .fn()
+        .mockResolvedValue({
+          failed: false,
+          stdout: 'https://github.com/jupiterone/testproject.git',
+        })
+    );
+    expect(repoNameDNS).toEqual('testproject');
+    const repoNameIP = await getRepoNameFromGitConfig(
+      jest
+        .fn()
+        .mockResolvedValue({
+          failed: false,
+          stdout: 'https://192.168.1.11/someuser/testproject.git',
+        })
+    );
+    expect(repoNameIP).toEqual('testproject');
+    const repoNameUnset = await getRepoNameFromGitConfig(
+      jest.fn().mockResolvedValue({ failed: true, stdout: '' })
+    );
+    expect(repoNameUnset).toEqual(undefined);
+  });
+
   it('sortFindings sorts finding entities by _type', () => {
     const sorted = sortFindings(repoFindings);
     expect(sorted.snykFindings.length).toEqual(3);
