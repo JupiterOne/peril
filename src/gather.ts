@@ -73,6 +73,11 @@ export async function codeRisk(): Promise<RiskCategory> {
   );
   checks.push(code.bannedLicensesCheck(bomLicenses, cfgValues.bannedLicenses));
 
+  const auditReports = await code.parsePackageAudit(
+    config.facts.code.scans.auditReport
+  );
+  checks.push(code.auditCheck(auditReports, cfgValues.auditFindings));
+
   // gather risks
   const risks = await Promise.all(checks);
 

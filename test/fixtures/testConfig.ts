@@ -34,6 +34,7 @@ export const config: Config = {
         depScanReport:
           '/Users/test/repos/jupiterone/peril/reports/depscan-report-nodejs.json',
         bomReport: '/Users/test/repos/jupiterone/peril/reports/bom-nodejs.json',
+        auditReport: '/Users/test/repos/jupiterone/peril/reports/audit.json',
       },
     },
     j1: {},
@@ -84,6 +85,11 @@ export const config: Config = {
           ],
           missingValue: 10,
           noVulnerabilitiesCredit: -5,
+        },
+        auditFindings: {
+          ignoreSeverityList: '',
+          missingValue: 10,
+          noAuditsCredit: -5,
         },
       },
       scm: {

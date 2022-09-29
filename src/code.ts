@@ -9,10 +9,12 @@ import {
   CodeValuesDepScanCheck,
   CodeValuesFileChangedCheck,
   CodeValuesLinesChangedCheck,
+  CodeValuesPackageAuditCheck,
   Config,
   DepScanFinding,
   License,
   MaybeString,
+  PackageAudit,
   Risk,
   ShortStat,
 } from './types';
@@ -302,18 +304,104 @@ export async function bannedLicensesCheck(
   );
 }
 
+export async function auditCheck(
+  packages: PackageAudit[],
+  checkValues: CodeValuesPackageAuditCheck
+): Promise<Risk> {
+  const check = 'packageAuditFindings';
+  const recommendations: string[] = [];
+  const { missingValue, ignoreSeverityList, noAuditsCredit } = checkValues;
+
+  if (!packages.length) {
+    recommendations.push('Ensure package audit runs prior to peril.');
+    return formatRisk(
+      {
+        check,
+        description: 'Missing Package Audit Scan',
+        value: missingValue,
+        recommendations,
+      },
+      riskCategory,
+      check
+    );
+  }
+
+  let value = 0;
+  const sevCounts: { [key: string]: number } = {
+    critical: 0,
+    high: 0,
+    moderate: 0,
+    low: 0,
+  };
+
+  const ignoreSeverities = ignoreSeverityList
+    .toLowerCase()
+    .split(',')
+    .map((i) => i.trim());
+
+  const packageFindings: PackageAudit[] = [];
+  for (const p of packages) {
+    if (ignoreSeverities.includes(p.data.advisory.severity.toLowerCase())) {
+      continue;
+    }
+    packageFindings.push(p);
+    value += p.data.advisory.cvss.score;
+    sevCounts[p.data.advisory.severity.toLowerCase()] += 1;
+  }
+
+  const combinedPackages = new Map<string, string[]>();
+
+  for (const p of packageFindings) {
+    const name = p.data.advisory.moduleName;
+    if (combinedPackages.has(name)) {
+      combinedPackages
+        .get(name)
+        ?.push(`${p.data.advisory.title}: ${p.data.advisory.recommendation}`);
+    } else {
+      combinedPackages.set(name, [
+        `${p.data.advisory.title}: ${p.data.advisory.recommendation}`,
+      ]);
+    }
+  }
+
+  if (Array.from(combinedPackages.values()).length > 0) {
+    recommendations.push('Consider updating the following package:');
+    for (const p of combinedPackages) {
+      recommendations.push(`\t- ${p[0]}\n\t${p[1].join('\n\t')}`);
+    }
+  } else {
+    value += noAuditsCredit;
+  }
+
+  return formatRisk(
+    {
+      check,
+      description:
+        combinedPackages.size > 0
+          ? Array.from(combinedPackages.values()).join('\n\t')
+          : 'None 🎉',
+      value,
+      recommendations,
+    },
+    riskCategory,
+    check
+  );
+}
+
 export async function gatherFacts(
   cmdRunner: any = undefined,
   config: Config = getConfig()
 ): Promise<CodeFacts> {
   const depScanReportPattern = 'depscan-report.*.json';
   const licensesReportPattern = 'bom-nodejs.json';
+  const packageAuditReportPattern = 'audit.json';
   const reportDir = path.join(config.flags.dir, 'reports');
   return {
     code: {
       scans: {
         depScanReport: (await findFiles(reportDir, depScanReportPattern))[0],
         bomReport: (await findFiles(reportDir, licensesReportPattern))[0],
+        auditReport: (await findFiles(reportDir, packageAuditReportPattern))[0],
       },
     },
   };
@@ -362,4 +450,27 @@ export async function parseBomLicenses(
     return [];
   }
   return bomLicenses;
+}
+
+export async function parsePackageAudit(
+  reportFile: MaybeString,
+  readFile: typeof fs.readFile = fs.readFile
+): Promise<PackageAudit[]> {
+  const packages: PackageAudit[] = [];
+  const reportString = await readFile(String(reportFile), 'utf8');
+  const lines = reportString
+    .trim()
+    .split('\n')
+    .filter((l) => l.length > 0);
+  if (lines.length == 0) {
+    return [];
+  }
+  try {
+    lines.map((line) => {
+      packages.push(JSON.parse(line) as PackageAudit);
+    });
+  } catch (e) {
+    return [];
+  }
+  return packages;
 }

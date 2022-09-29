@@ -32,6 +32,7 @@ export type CodeFacts = {
     scans: {
       depScanReport: MaybeString;
       bomReport: MaybeString;
+      auditReport: MaybeString;
     };
   };
 };
@@ -110,6 +111,7 @@ export type CodeValues = {
     filesChanged: CodeValuesFileChangedCheck;
     depscanFindings: CodeValuesDepScanCheck;
     bannedLicenses: CodeValuesBannedLicensesCheck;
+    auditFindings: CodeValuesPackageAuditCheck;
   };
 };
 
@@ -125,6 +127,12 @@ export type CodeValuesDepScanCheck = {
   ignoreIndirects: boolean;
   missingValue: number;
   noVulnerabilitiesCredit: number;
+};
+
+export type CodeValuesPackageAuditCheck = {
+  ignoreSeverityList: string;
+  missingValue: number;
+  noAuditsCredit: number;
 };
 
 export type CodeValuesLinesChangedCheck = {
@@ -273,4 +281,68 @@ export type Override = {
   rootSHA: string;
   justification: string;
   credit: number;
+};
+
+export type PackageInfo = {
+  moduleName: string;
+  issues: PackageIssue[];
+};
+
+export type PackageIssue = {
+  recommendation: string;
+  title: string;
+};
+
+export type PackageAudit = {
+  type: string;
+  data: PackageAuditData;
+};
+
+export type PackageAuditData = {
+  resolution: PackageAuditResolution;
+  advisory: PackageAuditAdvisory;
+};
+
+export type PackageAuditResolution = {
+  id: number;
+  path: string;
+  dev: boolean;
+  optional: boolean;
+  bundled: boolean;
+};
+
+export type PackageAuditAdvisory = {
+  findings: PackageAuditFindings[];
+  metadata: any;
+  vulnerableVersions: string;
+  moduleName: string;
+  severity: string;
+  githubAdvisoryId: string;
+  cves: string[];
+  access: string;
+  patchedVersions: string;
+  cvss: CVSS;
+  updated: Date;
+  recommendation: string;
+  cwe: string[];
+  foundBy: any;
+  deleted: any;
+  id: number;
+  references: string;
+  created: Date;
+  reportedBy: any;
+  title: string;
+  npmAdvisoryId: any;
+  overview: string;
+  url: string;
+};
+
+export type PackageAuditFindings = {
+  version: string;
+  paths: string[];
+};
+
+export type CVSS = {
+  score: number;
+  vectorString: string | null;
 };

@@ -29,6 +29,11 @@
         ],
         "missingValue": 0,
         "noVulnerabilitiesCredit": -1
+      },
+      "auditFindings": {
+        "ignoreSeverityList": "LOW, MODERATE",
+        "missingValue": 10,
+        "noAuditsCredit": -5
       }
     },
     "scm": {
