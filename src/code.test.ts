@@ -1,7 +1,14 @@
 import { depScanFindings } from '../test/fixtures/depscanFindings';
 import { config } from '../test/fixtures/testConfig';
+import {
+  criticalIssues,
+  highIssues,
+  lowIssues,
+  moderateIssues,
+} from './../test/fixtures/auditReport';
 import { badLicenses, goodLicenses } from './../test/fixtures/bomReport';
 import {
+  auditCheck,
   bannedLicensesCheck,
   depScanCheck,
   filesChangedCheck,
@@ -18,6 +25,7 @@ const {
   linesChanged,
   filesChanged,
   bannedLicenses,
+  auditFindings,
 } = config.values.checks.code;
 
 describe('code risks', () => {
@@ -169,5 +177,40 @@ describe('code risks', () => {
     const risk = await bannedLicensesCheck(goodLicenses, konfig);
     expect(risk.value).toEqual(-5);
     expect(risk.description).toMatch('None 🎉');
+  });
+
+  it('auditCheck reports severities', async () => {
+    const konfig = Object.assign({}, auditFindings);
+    const issues = [
+      ...criticalIssues,
+      ...highIssues,
+      ...moderateIssues,
+      ...lowIssues,
+    ];
+    const risk = await auditCheck(issues, konfig);
+    expect(risk.value).toEqual(21.9);
+    expect(risk.description).toMatch(
+      'CODE - packageAuditFindings: Authorization Bypass Through User-Controlled Key in url-parse: Upgrade to version 1.5.8 or later\n' +
+        '\tInefficient Regular Expression Complexity in chalk/ansi-regex: Upgrade to version 3.0.1 or later\n' +
+        '\tRegular Expression Denial of Service in hosted-git-info: Upgrade to version 2.8.9 or later\n' +
+        '\tRegular expression denial of service in semver-regex: Upgrade to version 3.1.4 or later +21.90'
+    );
+  });
+
+  it('auditCheck skips provided severities', async () => {
+    const konfig = Object.assign({}, auditFindings);
+    konfig.ignoreSeverityList = 'CRITICAL, LOW';
+    const issues = [
+      ...criticalIssues,
+      ...highIssues,
+      ...moderateIssues,
+      ...lowIssues,
+    ];
+    const risk = await auditCheck(issues, konfig);
+    expect(risk.value).toEqual(12.8);
+    expect(risk.description).toMatch(
+      'CODE - packageAuditFindings: Inefficient Regular Expression Complexity in chalk/ansi-regex: Upgrade to version 3.0.1 or later\n' +
+        '\tRegular Expression Denial of Service in hosted-git-info: Upgrade to version 2.8.9 or later +12.80'
+    );
   });
 });
