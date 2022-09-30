@@ -284,7 +284,7 @@ export type Override = {
 };
 
 export type PackageInfo = {
-  moduleName: string;
+  module_name: string;
   issues: PackageIssue[];
 };
 
@@ -314,25 +314,25 @@ export type PackageAuditResolution = {
 export type PackageAuditAdvisory = {
   findings: PackageAuditFindings[];
   metadata: any;
-  vulnerableVersions: string;
-  moduleName: string;
+  vulnerable_versions: string;
+  module_name: string;
   severity: string;
-  githubAdvisoryId: string;
+  github_advisory_id: string;
   cves: string[];
   access: string;
-  patchedVersions: string;
+  patched_versions: string;
   cvss: CVSS;
   updated: Date;
   recommendation: string;
   cwe: string[];
-  foundBy: any;
+  found_by: any;
   deleted: any;
   id: number;
   references: string;
   created: Date;
-  reportedBy: any;
+  reported_by: any;
   title: string;
-  npmAdvisoryId: any;
+  npm_advisory_id: any;
   overview: string;
   url: string;
 };

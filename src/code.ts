@@ -339,47 +339,45 @@ export async function auditCheck(
     .split(',')
     .map((i) => i.trim());
 
-  const packageFindings: PackageAudit[] = [];
+  const packageList = new Map<string, string[]>();
   for (const p of packages) {
+    if (p.type != 'auditAdvisory') {
+      continue;
+    }
     if (ignoreSeverities.includes(p.data.advisory.severity.toLowerCase())) {
       continue;
     }
-    packageFindings.push(p);
     value += p.data.advisory.cvss.score;
     sevCounts[p.data.advisory.severity.toLowerCase()] += 1;
+    const module = p.data.advisory.module_name;
+    if (!packageList.has(module)) [packageList.set(module, [])];
+    packageList
+      .get(module)
+      ?.push(
+        `${p.data.advisory.title}: ${p.data.advisory.recommendation} (${p.data.advisory.url})`
+      );
   }
 
-  const combinedPackages = new Map<string, string[]>();
-
-  for (const p of packageFindings) {
-    const name = p.data.advisory.moduleName;
-    if (combinedPackages.has(name)) {
-      combinedPackages
-        .get(name)
-        ?.push(`${p.data.advisory.title}: ${p.data.advisory.recommendation}`);
-    } else {
-      combinedPackages.set(name, [
-        `${p.data.advisory.title}: ${p.data.advisory.recommendation}`,
-      ]);
-    }
-  }
-
-  if (Array.from(combinedPackages.values()).length > 0) {
+  let msg = '';
+  if (Array.from(packageList.values()).length > 0) {
     recommendations.push('Consider updating the following package:');
-    for (const p of combinedPackages) {
-      recommendations.push(`\t- ${p[0]}\n\t${p[1].join('\n\t')}`);
+    for (const p of packageList) {
+      msg += `\n${p[0]}`;
+      recommendations.push(`- ${p[0]}`);
+      for (const i of new Set(p[1])) {
+        msg += `\n\t${i}`;
+        recommendations.push(`\t${i}`);
+      }
     }
   } else {
     value += noAuditsCredit;
+    msg = 'None 🎉';
   }
 
   return formatRisk(
     {
       check,
-      description:
-        combinedPackages.size > 0
-          ? Array.from(combinedPackages.values()).join('\n\t')
-          : 'None 🎉',
+      description: msg,
       value,
       recommendations,
     },

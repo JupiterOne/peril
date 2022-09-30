@@ -189,12 +189,7 @@ describe('code risks', () => {
     ];
     const risk = await auditCheck(issues, konfig);
     expect(risk.value).toEqual(21.9);
-    expect(risk.description).toMatch(
-      'CODE - packageAuditFindings: Authorization Bypass Through User-Controlled Key in url-parse: Upgrade to version 1.5.8 or later\n' +
-        '\tInefficient Regular Expression Complexity in chalk/ansi-regex: Upgrade to version 3.0.1 or later\n' +
-        '\tRegular Expression Denial of Service in hosted-git-info: Upgrade to version 2.8.9 or later\n' +
-        '\tRegular expression denial of service in semver-regex: Upgrade to version 3.1.4 or later +21.90'
-    );
+    expect(risk.description).toMatch(/GHSA-hgjh-723h-mx2j/);
   });
 
   it('auditCheck skips provided severities', async () => {
@@ -208,9 +203,6 @@ describe('code risks', () => {
     ];
     const risk = await auditCheck(issues, konfig);
     expect(risk.value).toEqual(12.8);
-    expect(risk.description).toMatch(
-      'CODE - packageAuditFindings: Inefficient Regular Expression Complexity in chalk/ansi-regex: Upgrade to version 3.0.1 or later\n' +
-        '\tRegular Expression Denial of Service in hosted-git-info: Upgrade to version 2.8.9 or later +12.80'
-    );
+    expect(risk.description).toMatch(/GHSA-93q8-gq69-wqmw/);
   });
 });
