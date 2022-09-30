@@ -31,8 +31,6 @@ export const config: Config = {
     },
     code: {
       scans: {
-        depScanReport:
-          '/Users/test/repos/jupiterone/peril/reports/depscan-report-nodejs.json',
         bomReport: '/Users/test/repos/jupiterone/peril/reports/bom-nodejs.json',
         auditReport: '/Users/test/repos/jupiterone/peril/reports/audit.json',
       },
@@ -60,13 +58,6 @@ export const config: Config = {
         filesChanged: {
           riskStep: 20,
           riskValuePerStep: 1,
-        },
-        depscanFindings: {
-          ignoreSeverityList: 'INFO, LOW',
-          ignoreUnfixable: true,
-          ignoreIndirects: true,
-          missingValue: 10,
-          noVulnerabilitiesCredit: 0,
         },
         bannedLicenses: {
           /*

@@ -30,7 +30,6 @@ export type SCMFacts = {
 export type CodeFacts = {
   code: {
     scans: {
-      depScanReport: MaybeString;
       bomReport: MaybeString;
       auditReport: MaybeString;
     };
@@ -109,7 +108,6 @@ export type CodeValues = {
   code: {
     linesChanged: CodeValuesLinesChangedCheck;
     filesChanged: CodeValuesFileChangedCheck;
-    depscanFindings: CodeValuesDepScanCheck;
     bannedLicenses: CodeValuesBannedLicensesCheck;
     auditFindings: CodeValuesPackageAuditCheck;
   };
@@ -117,14 +115,6 @@ export type CodeValues = {
 
 export type CodeValuesBannedLicensesCheck = {
   licenses: string[];
-  missingValue: number;
-  noVulnerabilitiesCredit: number;
-};
-
-export type CodeValuesDepScanCheck = {
-  ignoreSeverityList: string;
-  ignoreUnfixable: boolean;
-  ignoreIndirects: boolean;
   missingValue: number;
   noVulnerabilitiesCredit: number;
 };
@@ -230,17 +220,6 @@ export type SnykFinding = {
     package: string;
     version: string;
   };
-};
-
-export type DepScanFinding = {
-  id: string;
-  package: string;
-  package_usage: string;
-  version: string;
-  fix_version: string | null;
-  severity: string;
-  cvss_score: string;
-  short_description: string;
 };
 
 export type BOMLicenses = {

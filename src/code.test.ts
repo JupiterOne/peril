@@ -1,4 +1,3 @@
-import { depScanFindings } from '../test/fixtures/depscanFindings';
 import { config } from '../test/fixtures/testConfig';
 import {
   criticalIssues,
@@ -10,18 +9,15 @@ import { badLicenses, goodLicenses } from './../test/fixtures/bomReport';
 import {
   auditCheck,
   bannedLicensesCheck,
-  depScanCheck,
   filesChangedCheck,
   getGitDiffStats,
   locCheck,
   parseBomLicenses,
   parseGitDiffShortStat,
-  parseShiftLeftDepScan,
 } from './code';
 import { ShortStat } from './types';
 
 const {
-  depscanFindings,
   linesChanged,
   filesChanged,
   bannedLicenses,
@@ -96,49 +92,6 @@ describe('code risks', () => {
     };
     const risk2 = await filesChangedCheck(stats2, filesChanged);
     expect(risk2.value).toEqual(2);
-  });
-
-  it('parseShiftLeftDepScan parses file of newline-delimited JSON strings into DepScanFinding[]', async () => {
-    const reportString = depScanFindings
-      .map((f) => JSON.stringify(f))
-      .join('\n');
-    const findings = await parseShiftLeftDepScan(
-      'testReport',
-      jest.fn().mockResolvedValueOnce(reportString)
-    );
-    expect(findings).toEqual(depScanFindings);
-    expect(
-      await parseShiftLeftDepScan(
-        'testReport',
-        jest.fn().mockResolvedValueOnce('')
-      )
-    ).toEqual([]);
-  });
-
-  it('parseShiftLeftDepScan returns empty Array on error/missing report', async () => {
-    const findings = await parseShiftLeftDepScan(undefined);
-    expect(findings).toEqual([]);
-  });
-
-  it('depScanCheck penalizes for missing scans', async () => {
-    const missingScanRisk = await depScanCheck([], depscanFindings);
-    expect(missingScanRisk.value).toBeGreaterThanOrEqual(1);
-  });
-
-  it('depScanCheck ignores risk for <MEDIUM severity or unfixable findings', async () => {
-    const konfig = Object.assign({}, depscanFindings);
-    konfig.ignoreIndirects = false;
-    const risk = await depScanCheck(depScanFindings, konfig);
-    expect(risk.value).toEqual(7.5);
-    expect(risk.description).toMatch(/1 HIGH/);
-  });
-
-  it('depScanCheck ignores risk for optional/indirect findings if ignoreIndirects is set', async () => {
-    const konfig = Object.assign({}, depscanFindings);
-    konfig.ignoreIndirects = true;
-    const risk = await depScanCheck(depScanFindings, konfig);
-    expect(risk.value).toEqual(0);
-    expect(risk.description).toMatch(/None/);
   });
 
   it('parseBomLicenses parses JSON file into BOMLicenses[]', async () => {
