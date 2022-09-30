@@ -63,10 +63,6 @@ export async function codeRisk(): Promise<RiskCategory> {
         'WARN'
       );
   }
-  const depScanFindings = await code.parseShiftLeftDepScan(
-    config.facts.code.scans.depScanReport
-  );
-  checks.push(code.depScanCheck(depScanFindings, cfgValues.depscanFindings));
 
   const bomLicenses = await code.parseBomLicenses(
     config.facts.code.scans.bomReport

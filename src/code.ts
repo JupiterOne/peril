@@ -6,12 +6,10 @@ import {
   BOMLicenses,
   CodeFacts,
   CodeValuesBannedLicensesCheck,
-  CodeValuesDepScanCheck,
   CodeValuesFileChangedCheck,
   CodeValuesLinesChangedCheck,
   CodeValuesPackageAuditCheck,
   Config,
-  DepScanFinding,
   License,
   MaybeString,
   PackageAudit,
@@ -128,99 +126,6 @@ export async function filesChangedCheck(
       check,
       value,
       description: `${gitStats.filesChanged} changed files.`,
-      recommendations,
-    },
-    riskCategory,
-    check
-  );
-}
-
-export async function depScanCheck(
-  findings: DepScanFinding[],
-  checkValues: CodeValuesDepScanCheck
-): Promise<Risk> {
-  const check = 'depscanFindings';
-  const recommendations: string[] = [];
-  const {
-    missingValue,
-    ignoreSeverityList,
-    ignoreUnfixable,
-    ignoreIndirects,
-    noVulnerabilitiesCredit,
-  } = checkValues;
-
-  if (!findings.length) {
-    recommendations.push(
-      'Ensure ShiftLeft/scan dependency check runs prior to peril.'
-    );
-    return formatRisk(
-      {
-        check,
-        description: 'Code - Missing Dependency Scan',
-        value: missingValue,
-        recommendations,
-      },
-      riskCategory,
-      check
-    );
-  }
-
-  let value = 0;
-  const sevCounts: { [key: string]: number } = {
-    critical: 0,
-    high: 0,
-    medium: 0,
-    low: 0,
-    info: 0,
-  };
-
-  const ignoreSeverities = ignoreSeverityList
-    .toLowerCase()
-    .split(',')
-    .map((i) => i.trim());
-
-  const validFindings: DepScanFinding[] = [];
-
-  for (const finding of findings) {
-    if (!finding.fix_version && ignoreUnfixable) {
-      continue;
-    }
-    if (finding.package_usage === 'optional' && ignoreIndirects) {
-      continue;
-    }
-    if (ignoreSeverities.includes(finding.severity.toLowerCase())) {
-      continue;
-    }
-    value += parseFloat(finding.cvss_score);
-    validFindings.push(finding);
-    sevCounts[finding.severity.toLowerCase()] += 1;
-  }
-
-  // summarize valid findings in description
-  // e.g. 1 CRITICAL, 2 HIGH, etc.
-  const validFindingCounts: string[] = [];
-  for (const sevKey of Object.keys(sevCounts)) {
-    if (sevCounts[sevKey] > 0) {
-      validFindingCounts.push(`${sevCounts[sevKey]} ${sevKey.toUpperCase()}`);
-    }
-  }
-  if (!validFindingCounts.length) {
-    validFindingCounts.push('None 🎉');
-    value += noVulnerabilitiesCredit;
-  } else {
-    recommendations.push('Upgrade vulnerable packages:');
-    for (const finding of validFindings) {
-      recommendations.push(
-        `  - ${finding.package}@${finding.version} can be upgraded to ${finding.fix_version}`
-      );
-    }
-  }
-
-  return formatRisk(
-    {
-      check,
-      description: validFindingCounts.join(', '),
-      value,
       recommendations,
     },
     riskCategory,
@@ -358,26 +263,33 @@ export async function auditCheck(
       );
   }
 
-  let msg = '';
   if (Array.from(packageList.values()).length > 0) {
     recommendations.push('Consider updating the following package:');
     for (const p of packageList) {
-      msg += `\n${p[0]}`;
       recommendations.push(`- ${p[0]}`);
       for (const i of new Set(p[1])) {
-        msg += `\n\t${i}`;
         recommendations.push(`\t${i}`);
       }
     }
   } else {
     value += noAuditsCredit;
-    msg = 'None 🎉';
+  }
+
+  const validFindingCounts: string[] = [];
+  for (const sevKey of Object.keys(sevCounts)) {
+    if (sevCounts[sevKey] > 0) {
+      validFindingCounts.push(`${sevCounts[sevKey]} ${sevKey.toUpperCase()}`);
+    }
+  }
+
+  if (!validFindingCounts.length) {
+    validFindingCounts.push('None 🎉');
   }
 
   return formatRisk(
     {
       check,
-      description: msg,
+      description: validFindingCounts.join(', '),
       value,
       recommendations,
     },
@@ -390,43 +302,17 @@ export async function gatherFacts(
   cmdRunner: any = undefined,
   config: Config = getConfig()
 ): Promise<CodeFacts> {
-  const depScanReportPattern = 'depscan-report.*.json';
   const licensesReportPattern = 'bom-nodejs.json';
   const packageAuditReportPattern = 'audit.json';
   const reportDir = path.join(config.flags.dir, 'reports');
   return {
     code: {
       scans: {
-        depScanReport: (await findFiles(reportDir, depScanReportPattern))[0],
         bomReport: (await findFiles(reportDir, licensesReportPattern))[0],
         auditReport: (await findFiles(reportDir, packageAuditReportPattern))[0],
       },
     },
   };
-}
-
-export async function parseShiftLeftDepScan(
-  reportFile: MaybeString,
-  readFile: typeof fs.readFile = fs.readFile
-): Promise<DepScanFinding[]> {
-  const depFindings: DepScanFinding[] = [];
-  try {
-    const report = await readFile(String(reportFile), 'utf8');
-    // each line in report is a stringified JSON finding expression
-    const lines = report
-      .trim()
-      .split('\n')
-      .filter((l) => l.length > 0);
-    if (!lines.length) {
-      return [];
-    }
-    lines.map((line) => {
-      depFindings.push(JSON.parse(line) as DepScanFinding);
-    });
-  } catch (e) {
-    return [];
-  }
-  return depFindings;
 }
 
 export async function parseBomLicenses(
