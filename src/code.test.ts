@@ -189,7 +189,7 @@ describe('code risks', () => {
     ];
     const risk = await auditCheck(issues, konfig);
     expect(risk.value).toEqual(21.9);
-    expect(risk.description).toMatch(/GHSA-hgjh-723h-mx2j/);
+    expect(risk.description).toMatch(/1 CRITICAL, 1 HIGH, 1 MODERATE, 1 LOW/);
   });
 
   it('auditCheck skips provided severities', async () => {
@@ -203,6 +203,6 @@ describe('code risks', () => {
     ];
     const risk = await auditCheck(issues, konfig);
     expect(risk.value).toEqual(12.8);
-    expect(risk.description).toMatch(/GHSA-93q8-gq69-wqmw/);
+    expect(risk.description).toMatch(/1 HIGH, 1 MODERATE/);
   });
 });

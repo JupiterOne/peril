@@ -358,26 +358,33 @@ export async function auditCheck(
       );
   }
 
-  let msg = '';
   if (Array.from(packageList.values()).length > 0) {
     recommendations.push('Consider updating the following package:');
     for (const p of packageList) {
-      msg += `\n${p[0]}`;
       recommendations.push(`- ${p[0]}`);
       for (const i of new Set(p[1])) {
-        msg += `\n\t${i}`;
         recommendations.push(`\t${i}`);
       }
     }
   } else {
     value += noAuditsCredit;
-    msg = 'None 🎉';
+  }
+
+  const validFindingCounts: string[] = [];
+  for (const sevKey of Object.keys(sevCounts)) {
+    if (sevCounts[sevKey] > 0) {
+      validFindingCounts.push(`${sevCounts[sevKey]} ${sevKey.toUpperCase()}`);
+    }
+  }
+
+  if (!validFindingCounts.length) {
+    validFindingCounts.push('None 🎉');
   }
 
   return formatRisk(
     {
       check,
-      description: msg,
+      description: validFindingCounts.join(', '),
       value,
       recommendations,
     },
