@@ -457,15 +457,15 @@ export async function parsePackageAudit(
   readFile: typeof fs.readFile = fs.readFile
 ): Promise<PackageAudit[]> {
   const packages: PackageAudit[] = [];
-  const reportString = await readFile(String(reportFile), 'utf8');
-  const lines = reportString
-    .trim()
-    .split('\n')
-    .filter((l) => l.length > 0);
-  if (lines.length == 0) {
-    return [];
-  }
   try {
+    const reportString = await readFile(String(reportFile), 'utf8');
+    const lines = reportString
+      .trim()
+      .split('\n')
+      .filter((l) => l.length > 0);
+    if (lines.length == 0) {
+      return [];
+    }
     lines.map((line) => {
       packages.push(JSON.parse(line) as PackageAudit);
     });
