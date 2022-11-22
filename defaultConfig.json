@@ -66,6 +66,15 @@
         "allMitigatedCredit": -3,
         "missingValue": 5
       }
+    },
+    "sast": {
+      "threatModels": {
+        "enabled": true,
+        "highRiskValue": 10,
+        "mediumRiskValue": 5,
+        "lowRiskValue": 1,
+        "allMitigatedCredit": -3
+      }
     }
   }
 }

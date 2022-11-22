@@ -304,12 +304,14 @@ export async function gatherFacts(
 ): Promise<CodeFacts> {
   const licensesReportPattern = 'bom-nodejs.json';
   const packageAuditReportPattern = 'audit.json';
+  const sarifReportPattern = 'codeql-scan.sarif';
   const reportDir = path.join(config.flags.dir, 'reports');
   return {
     code: {
       scans: {
         bomReport: (await findFiles(reportDir, licensesReportPattern))[0],
         auditReport: (await findFiles(reportDir, packageAuditReportPattern))[0],
+        sarifReport: (await findFiles(reportDir, sarifReportPattern))[0],
       },
     },
   };

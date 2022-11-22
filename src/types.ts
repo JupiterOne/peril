@@ -32,6 +32,7 @@ export type CodeFacts = {
     scans: {
       bomReport: MaybeString;
       auditReport: MaybeString;
+      sarifReport: MaybeString;
     };
   };
 };
