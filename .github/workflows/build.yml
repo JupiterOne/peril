@@ -126,8 +126,12 @@ jobs:
 
       - name: Build the latest Docker image
         if: env.need_docker_build
-        run: docker build . --file Dockerfile --tag jupiterone/peril:latest
+        run: docker build . --file Dockerfile --tag jupiterone/peril:latest --tag ghcr.io/jupiterone/peril:latest
 
-      - name: Push the latest Docker image
+      - name: Push the latest Docker image to DockerHub
+        if: env.need_docker_build
+        run: docker push jupiterone/peril:latest
+
+      - name: Push the latest Docker image to GHCR
         if: env.need_docker_build
         run: docker push ghcr.io/jupiterone/peril:latest
