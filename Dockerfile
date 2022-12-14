@@ -1,9 +1,9 @@
-FROM node:12 as builder
+FROM node:14 as builder
 WORKDIR /opt/jupiterone
 COPY . .
 RUN yarn install && yarn build
 
-FROM node:12-alpine
+FROM node:14-alpine
 WORKDIR /opt/jupiterone
 RUN apk update && apk upgrade && apk add --no-cache bash git gnupg
 COPY --from=builder /opt/jupiterone/dist .
