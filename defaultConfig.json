@@ -11,7 +11,7 @@
         "riskValuePerStep": 0.1
       },
       "depscanFindings": {
-        "ignoreSeverityList": "INFO, LOW",
+        "ignoreSeverityList": "INFO, LOW, HIGH",
         "ignoreUnfixable": true,
         "ignoreIndirects": true,
         "missingValue": 10,
@@ -31,7 +31,7 @@
         "noVulnerabilitiesCredit": -1
       },
       "auditFindings": {
-        "ignoreSeverityList": "LOW, MODERATE",
+        "ignoreSeverityList": "LOW, MODERATE, HIGH",
         "missingValue": 10,
         "noAuditsCredit": -5
       }
