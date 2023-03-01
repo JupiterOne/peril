@@ -8,7 +8,7 @@ import { Config, Risk, RiskCategory } from './types';
 
 export async function localSCMRisk(): Promise<RiskCategory> {
   const checks: Promise<Risk>[] = [];
-  const defaultRiskValue = 5;
+  const defaultRiskValue = 0;
 
   const config = getConfig();
 
@@ -23,6 +23,12 @@ export async function localSCMRisk(): Promise<RiskCategory> {
   }
   if (config.facts.scm.gitPath && config.facts.scm.gpgPath) {
     checks.push(scm.gpgVerifyRecentCommitsCheck(scmCheckValues.verifyGpg));
+    checks.push(
+      scm.gpgVerifyAllCommitsCheck(
+        config.flags.mergeRef,
+        scmCheckValues.verifyAllGpg
+      )
+    );
   }
 
   checks.push(
@@ -34,6 +40,7 @@ export async function localSCMRisk(): Promise<RiskCategory> {
 
   // gather risks
   const risks = await Promise.all(checks);
+  console.log({ risks, defaultRiskValue, section: 'localSCMRisk' });
 
   return {
     title: 'SCM Risk',
