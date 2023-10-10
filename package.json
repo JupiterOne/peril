@@ -1,10 +1,13 @@
 {
   "name": "@jupiterone/peril",
-  "description": "Project Risk Analysis and Reporting Tool",
   "version": "0.3.9",
-  "author": "JupiterOne <developer@jupiterone.com>",
-  "repository": "jupiterone/project-risk-analyzer",
+  "description": "Project Risk Analysis and Reporting Tool",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com///oauth2"
+  },
   "license": "MIT",
+  "author": "JupiterOne <developer@jupiterone.com>",
   "main": "dist/index.js",
   "bin": {
     "peril": "./bin/run"
