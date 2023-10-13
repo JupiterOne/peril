@@ -1,5 +1,5 @@
 {
-  "name": "peril",
+  "name": "@jupiterone/peril",
   "version": "0.3.9",
   "description": "Project Risk Analysis and Reporting Tool",
   "repository": {
