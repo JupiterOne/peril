@@ -14,7 +14,7 @@ info:
   description: Project Risk Analysis and Reporting Tool
   x-cortex-git:
     github:
-      repository: //oauth2
+      repository: JupiterOne/peril
   x-cortex-owners:
     - type: group
       name: JupiterOne/sre
