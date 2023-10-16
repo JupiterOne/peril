@@ -4,7 +4,7 @@
   "description": "Project Risk Analysis and Reporting Tool",
   "repository": {
     "type": "git",
-    "url": "https://github.com/peril"
+    "url": "https://github.com/JupiterOne/peril"
   },
   "license": "MIT",
   "author": "JupiterOne <developer@jupiterone.com>",
