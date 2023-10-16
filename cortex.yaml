@@ -1,22 +1,14 @@
-title: '@jupiterone/peril'
-description: Project Risk Analysis and Reporting Tool
-x-cortex-git:
-  github:
-    repository: //oauth2
-x-cortex-owners:
-  - type: group
-    name: JupiterOne/sre
-x-cortex-service-groups: tier-4
-x-cortex-tag: '@jupiterone/peril'
 openapi: 3.0.1
 info:
   title: '@jupiterone/peril'
   description: Project Risk Analysis and Reporting Tool
   x-cortex-git:
     github:
-      repository: JupiterOne/peril
+      repository: JupiterOne/JupiterOne/peril
   x-cortex-owners:
     - type: group
       name: JupiterOne/sre
   x-cortex-service-groups: tier-4
   x-cortex-tag: '@jupiterone/peril'
+  x-cortex-dependency:
+    - tag: base-deploy
