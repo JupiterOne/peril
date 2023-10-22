@@ -84,6 +84,7 @@ export type SCMValues = {
     git: SCMValuesGitCheck;
     enforceGpg: SCMValuesEnforceGPGCheck;
     verifyGpg: SCMValuesVerifyGPGCheck;
+    verifyAllGpg: SCMValuesVerifyAllGPGCheck;
     gitleaksFindings: SCMValuesGitleaksFindingsCheck;
   };
 };
@@ -94,6 +95,10 @@ export type SCMValuesEnforceGPGCheck = {
 
 export type SCMValuesVerifyGPGCheck = {
   missingValue: number;
+};
+
+export type SCMValuesVerifyAllGPGCheck = {
+  perUnverifiedValue: number;
 };
 
 export type SCMValuesGitleaksFindingsCheck = {
